@@ -19,8 +19,9 @@ public class GameDriver {
          + "\nto level up and see how far you can go!\n");
       System.out.println("Kill 5 enemies in a row to progress to the next layer."
          + "\nThe 5th enemy will be a special boss enemy who is tougher to kill.");
+      System.out.println("\nGet through layer 5 and defeat the Imperial Red Dragon to win.\n");
       
-      System.out.println("");
+      
       
       // Ask for name of player:
       Scanner sc = new Scanner(System.in);
@@ -43,27 +44,51 @@ public class GameDriver {
          num += 1;
          if (num > 5) {
             num = 1;
-            e1.levelUp();
+            if (layer > 5) {
+               e1.levelUp();
+               e1.setLuck(1);
+            }
+            else {
+               e1.levelUp();
+            }
          }
          
          // Check for Boss / generate stats for boss;
          if (num == 5) {
-            String[] eBossList = new String[15];
-            eBossList[0] = "Blue Dragon Boss";
-            eBossList[1] = "Giant Troll Boss";
-            eBossList[2] = "Warlord Shaman Boss";
-            eBossList[3] = "Treasure Seeker Goblin Boss";
-            eBossList[4] = "Bloodthirsty Gnoll Boss";
-            int eBossLength = 4;
-         
-            Random rn = new Random();
-         
-            String tName = eBossList[rn.nextInt(eBossLength + 1)];
-         
-            e1.setName(tName);
-            e1.setAttack(e1.getAttack() + 10);
-            e1.setHp(e1.getHp() + 20);
-            e1.setLuck(e1.getLuck() - 1);
+            if (layer == 5) {
+               e1.setName("Imperial Red Dragon");
+               e1.setAttack(100);
+               e1.setHp(150);
+               e1.setDefense(0);
+               e1.setLuck(e1.getLuck());
+            }
+            else {
+               String[] eBossList = new String[15];
+               eBossList[0] = "Blue Dragon Boss";
+               eBossList[1] = "Giant Troll Boss";
+               eBossList[2] = "Warlord Shaman Boss";
+               eBossList[3] = "Treasure Seeker Goblin Boss";
+               eBossList[4] = "Bloodthirsty Gnoll Boss";
+               int eBossLength = 4;
+            
+               Random rn = new Random();
+            
+               String tName = eBossList[rn.nextInt(eBossLength + 1)];
+               if (layer > 5) {
+                  e1.setName(tName);
+                  e1.setAttack(e1.getAttack() + 20);
+                  e1.setHp(e1.getHp() + 30);
+                  e1.setDefense(e1.getDefense());
+                  e1.setLuck(e1.getLuck());
+               }
+               else {
+                  e1.setName(tName);
+                  e1.setAttack(e1.getAttack() + 10);
+                  e1.setHp(e1.getHp() + 15);
+                  e1.setDefense(e1.getDefense() - 5);
+                  e1.setLuck(e1.getLuck() - 1);
+               }
+            }
          }
          
          // Enemy appears / Combat begins:
@@ -110,7 +135,7 @@ public class GameDriver {
                      player.takeHit(e1.getAttack() - player.getDefense());
                   }
                   else {
-                     System.out.println("Enemy " + eName + " missed!");
+                     System.out.println(eName + " missed!");
                   }
                   break;
             
@@ -163,12 +188,24 @@ public class GameDriver {
                   if (layer == 2) {
                      System.out.println("Enemies get tougher for every layer, but so do you.");
                      System.out.println("Keep the hordes at bay! Treasure awaits!");
+                     System.out.println("When you level up, the stat of your choosing goes up by 10 (20 for HP)."
+                        + "\nBut don't worry, the others still go up by 5 (10 for HP).");
+                  
                   }
+                  if (layer == 5) {
+                     System.out.println("\nYou defeated the Imperial Red Dragon!");
+                     System.out.println("Congratulations!");
+                     System.out.println("***You have successfully completed Dungeon Divers!***\n" 
+                        + "\nYou can keep going however, enemies will get a lot tougher from now on.");
+                  }
+                  
+                  // Level up:
                   System.out.println("\nYou leveled up!");
                   System.out.println("What do you want to upgrade?");
+                  
                   System.out.println("---[A]ttack, [D]efense, [H]ealth---");
                   String line2 = sc.next().toUpperCase();
-                  char upgrade = line.charAt(0);
+                  char upgrade = line2.charAt(0);
                   boolean levelPhase = true;
                   while (levelPhase) {
                      switch (upgrade) {

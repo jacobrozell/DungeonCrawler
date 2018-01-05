@@ -133,7 +133,7 @@ public class Player {
          MAX_ATK += 5;
       }
       
-      //Player chose def
+      //Player chose def:
       if (in == 2) {
          MAX_DEF += 10;
       }
@@ -143,10 +143,10 @@ public class Player {
       
       //Player chose Hp:
       if (in == 3) {
-         MAX_HP += 10;
+         MAX_HP += 20;
       }
       else {
-         MAX_HP += 5;
+         MAX_HP += 10;
       }
 
       hp = MAX_HP;
@@ -196,7 +196,7 @@ public class Player {
    
    public String died() {
       String output = "";
-      output += "You died!";
+      output += "\nYou died!";
       output += "\n--------------------------------------------------------";  
       return output;
    } 

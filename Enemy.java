@@ -141,14 +141,14 @@ public class Enemy {
    
    public void levelUp() {
       level++;
-      MAX_HP += 10;
-      MAX_ATK += 5;
+      MAX_HP += 15;
+      MAX_ATK += 15;
       MAX_DEF += 5;
       hp = MAX_HP;
       attack = MAX_ATK;
       defense = MAX_DEF;
-      if (level == 5) {
-         luck = 4;
+      if (level == 4) {
+         luck = 3;
       }
    }
    
