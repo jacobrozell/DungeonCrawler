@@ -9,6 +9,7 @@ public class GameDriver {
      // Setup:
       boolean gameRunning = true;
       int num = 0;
+      int layer = 1;
    
       // Introduce name of game:
       System.out.println("\n----------Welcome to Dungeon Divers!----------\n");
@@ -60,13 +61,14 @@ public class GameDriver {
             String tName = eBossList[rn.nextInt(eBossLength + 1)];
          
             e1.setName(tName);
-            e1.setAttack(e1.getAttack() + 5);
+            e1.setAttack(e1.getAttack() + 10);
             e1.setHp(e1.getHp() + 20);
             e1.setLuck(e1.getLuck() - 1);
          }
          
          // Enemy appears / Combat begins:
-         System.out.println("\n*Enemy " + num + " of 5*");
+         
+         System.out.println("\n*Layer " + layer + ": Enemy " + num + " of 5*");
          System.out.println("A " + e1.getName() + " appears!");
          boolean combat = true;
       
@@ -155,7 +157,50 @@ public class GameDriver {
             if (e1.getHp() <= 0) {
                System.out.println(e1.died());
                combat = false;
+               
+               if (num == 5) {
+                  layer++;
+                  if (layer == 2) {
+                     System.out.println("Enemies get tougher for every layer, but so do you.");
+                     System.out.println("Keep the hordes at bay! Treasure awaits!");
+                  }
+                  System.out.println("\nYou leveled up!");
+                  System.out.println("What do you want to upgrade?");
+                  System.out.println("---[A]ttack, [D]efense, [H]ealth---");
+                  String line2 = sc.next().toUpperCase();
+                  char upgrade = line.charAt(0);
+                  boolean levelPhase = true;
+                  while (levelPhase) {
+                     switch (upgrade) {
+                     
+                        case 'A':
+                           System.out.println("You upgraded attack!");
+                           player.levelUp(1);
+                           levelPhase = false;
+                           break;
+                        
+                        case 'D':
+                           System.out.println("You upgraded defense!");
+                           player.levelUp(2);
+                           levelPhase = false;
+                           break;
+                        
+                        case 'H':
+                           System.out.println("You upgraded health!");
+                           player.levelUp(3);
+                           levelPhase = false;
+                           break;
+                        
+                        default:
+                           System.out.println("Invalid command.");
+                           break;
+                        
+                     }
+                  }
+                  System.out.println("--------------------------------------------------------");
+               }
             }
+            
             if (player.getHp() <= 0) {
                combat = false;
                System.out.println(player.died());

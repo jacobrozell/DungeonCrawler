@@ -121,15 +121,34 @@ public class Player {
    
    /** Levels up.
     */
-   public void levelUp() {
+   public void levelUp(int in) {
    
-   /*Add switch statement / picked stat goes  
-     up double that level instead of normal*/
       level += 1;
-      MAX_HP += 10;
-      MAX_ATK += 5;
-      MAX_DEF += 5;
       
+      //Player chose atk:
+      if (in == 1) {
+         MAX_ATK += 10;
+      }
+      else {
+         MAX_ATK += 5;
+      }
+      
+      //Player chose def
+      if (in == 2) {
+         MAX_DEF += 10;
+      }
+      else {
+         MAX_DEF += 5;
+      }
+      
+      //Player chose Hp:
+      if (in == 3) {
+         MAX_HP += 10;
+      }
+      else {
+         MAX_HP += 5;
+      }
+
       hp = MAX_HP;
       attack = MAX_ATK;
       defense = MAX_DEF;
@@ -169,15 +188,16 @@ public class Player {
       luck = luckIn;
    }
    
+   
    public int getLuck() {
       return luck;
    }
    
+   
    public String died() {
       String output = "";
       output += "You died!";
-      output += "\n--------------------------------------------------------";
-         
+      output += "\n--------------------------------------------------------";  
       return output;
    } 
    
