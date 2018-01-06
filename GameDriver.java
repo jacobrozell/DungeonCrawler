@@ -219,10 +219,9 @@ public class GameDriver {
                
                //Layer increases if boss defeated:
                if (num == 5) {
-                  layer++;
                   
                   //End tutorial / explain level up:
-                  if (layer == 2) {
+                  if (layer == 1) {
                      System.out.println("Enemies get tougher for every layer, but so do you.");
                      System.out.println("Keep the hordes at bay! Treasure awaits!");
                      System.out.println("When you level up, the stat of your choosing goes up by 10 (20 for HP)."
@@ -235,8 +234,9 @@ public class GameDriver {
                      System.out.println("Congratulations!");
                      System.out.println("***You have successfully completed Dungeon Divers!***\n" 
                         + "\nYou can keep going however, enemies will get a lot tougher from now on.");
-                  }
                   
+                  layer++;
+
                   // Level up:
                   System.out.println("\nYou leveled up!");
                   System.out.println("What do you want to upgrade?");
