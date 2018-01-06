@@ -178,7 +178,7 @@ public class GameDriver {
                   else {
                      System.out.println("You successfully dodged the incoming attack!");
                      System.out.println("You regained a small portion of your health!");
-                     player.regainHealth(5 * player.getLevel());
+                     player.restoreHp(5 * player.getLevel());
                   }
                   break;
             
