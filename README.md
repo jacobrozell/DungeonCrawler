@@ -1,3 +1,3 @@
 # Dungeon Divers!
 # Simple game to study combat logic.
-# Open 'GameDriver' and Run it to play.
+# To play, Click Codiva link above. Open 'GameDriver' and Run it to play.
