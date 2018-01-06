@@ -1,5 +1,8 @@
 import java.util.Random;
 
+/** Creates enemy class and methods.
+ *
+ */
 public class Enemy {
 
 
@@ -7,6 +10,7 @@ public class Enemy {
    protected static int MAX_HP = 50;
    protected static int MAX_ATK = 15;
    protected static int MAX_DEF = 5;  
+
 
 // Instance Varibles:
    protected int hp = 50;
@@ -41,6 +45,9 @@ public class Enemy {
       
    }
    
+   /** Used for bosses. 
+    * @param nameIn - name
+    */
    public Enemy(String nameIn) {
    
       hp = MAX_HP;
@@ -51,7 +58,8 @@ public class Enemy {
    
    
    
-   /** sets Hp.
+   /** Sets Hp.
+    * @param hpIn - hp
     */
    public void setHp(int hpIn) {
       hp = hpIn;
@@ -59,53 +67,65 @@ public class Enemy {
    }
    
    
-   /** return Hp.
+   /** Return Hp.
+    * @return hp
     */
    public int getHp() {
       return hp;
    }
    
    
-   /** sets attack.
+   /** Sets attack.
+    * @param atkIn - atk
     */
    public void setAttack(int atkIn) {
       attack = atkIn;
-      
    }
    
    
-   /** return attack.
+   /** Return attack.
+    * @return attack
     */
    public int getAttack() {
       return attack;
    }
    
    
-   /** sets Defense.
+   /** Sets Defense.
+    * @param defIn - defense
     */
    public void setDefense(int defIn) {
       defense = defIn;
    }
    
    
-   /** return Defense.
+   /** Return Defense.
+    * @return defense
     */
    public int getDefense() {
       return defense;
    }
    
    
+   /** Return name.
+    * @return name
+    */
    public String getName() {
       return name;
    }
    
    
+   /** Sets name.
+    * @param nameIn - name
+    */
    public void setName(String nameIn) {
       name = nameIn;
    }
    
    
-   /** Takes hit.
+   /** Takes hit (Hp - hitIn).
+    * @param hitIn - hit
+    *
     */
    public void takeHit(int hitIn) {
       hp -= hitIn;
@@ -116,6 +136,7 @@ public class Enemy {
 
    
    /** Regains Health.
+    * @param hpIn - hp
     */
    public void restoreHp(int hpIn) {
       hp += hpIn;
@@ -125,12 +146,16 @@ public class Enemy {
    }
    
    
+   /** Checks to see if enemy hits (RNG).
+    * @param chance = 'dice' roll (0,9)
+    * @return true/false
+    */
    public boolean checkHit(int chance) {
       Random rn = new Random();
       
       int hit = rn.nextInt(10);
       
-      if (hit > chance) {
+      if (hit >= chance) {
          return true;
       }
       
@@ -139,6 +164,9 @@ public class Enemy {
       }
    }
    
+   
+   /** Levels up.
+    */
    public void levelUp() {
       level++;
       MAX_HP += 15;
@@ -152,19 +180,34 @@ public class Enemy {
       }
    }
    
+   
+   /** Return current level.
+    * @return level
+    */
    public int getLevel() {
       return level;
    }
    
+   
+   /** Sets luck.
+    * @param luckIn - luck
+    */
    public void setLuck(int luckIn) {
       luck = luckIn;
    }
    
+   
+   /** Return Luck.
+    * @return luck
+    */
    public int getLuck() {
       return luck;
    }
    
    
+   /** Return died.
+    * @return output
+    */
    public String died() {
       String output = "";
       output += "\nThe " + getName() + " was killed!\n"
@@ -172,7 +215,10 @@ public class Enemy {
       return output;
    }     
     
-   
+    
+   /** Return enemy stats.
+    * @return output
+    */
    public String toString() {
       String output = "";
          
