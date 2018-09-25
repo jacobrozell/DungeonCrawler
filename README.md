@@ -1,3 +1,4 @@
 # Welcome to Dungeon Divers!
-### Simple game to study combat logic.
-### To play, click Codiva link above. Open 'GameDriver' and Run it to play.
+### Dungeon Divers is simple game made to study combat logic.
+### To play, click Codiva link above in the description. Open 'GameDriver' and press 'Run'.
+### Enjoy the game!
