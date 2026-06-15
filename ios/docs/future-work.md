@@ -51,6 +51,31 @@ Candidate additions beyond the current build order, roughly by value:
 
 Newest first. Update this as you land work so whoever picks up next knows the state.
 
+- **2026-06-15 — Idle pivot = HYBRID (chosen). Part 1: auto-battle tick +
+  big-number formatting. DONE.** (Plan: `idle-design.md`.)
+  - `Models/Formatting.swift`: `Formatting.short(_:)` (K/M/B/T/aa…). Applied to
+    gold in `CombatView` header, `ShopView` (gold + prices), `GameOverView`,
+    title best-run.
+  - `GameEngine`: `autoBattle` flag, `toggleAuto()`, `tick()` (no-op unless
+    `autoBattle && phase == .combat`), and `autoMove()` heuristic (heal when
+    <35% HP, else strongest affordable move). The tick pauses outside combat so
+    the player still makes level-up / shop / (future) ascension choices — that's
+    the hybrid hook.
+  - `CombatView`: ~1 Hz `Timer.publish` drives `engine.tick()`; an Auto-Battle
+    on/off toggle added above the moves (both portrait & landscape).
+  - Registered `Formatting.swift` (pbxproj id 0018). Tests: `FormattingTests`,
+    plus auto-tick tests in `GameEngineTests`.
+  - **Remaining hybrid parts (next):** (2) offline progress — persist
+    `lastSeen: Date`, accrue capped gold at an estimated rate on launch, "while
+    you were away" summary; needs (3) `Codable` full save/restore of
+    `GameEngine` (only `BestRun` persists today). (4) Prestige/ascension —
+    `SoulShards = floor((goldThisRun/K)^0.5)`, `Phase.ascension`, a skill-tree
+    screen, permanent ×DPS/×gold/offline-cap multipliers, reset plumbing reusing
+    `startGame`. (5) Automation unlocks (auto-advance, auto-buy, auto-descend)
+    gated behind the tree. (6) Balancing. See `idle-design.md` §5.
+  - The 1 Hz timer always runs; `tick()` guards cheaply. If battery shows up as
+    a concern, pause via `scenePhase` and use delta-time on resume.
+
 - **2026-06-15 — Step 6 (partial): endless rebalance — "score chase". DONE.**
   - Problem: the shop let players snowball into trivial runs. Without the shop,
     enemy HP (+15/layer) already outgrew player per-hit damage (~+5/layer), but

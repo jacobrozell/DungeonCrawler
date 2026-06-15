@@ -20,7 +20,7 @@ struct ShopView: View {
                     .font(.system(size: 36, weight: .heavy, design: .serif))
                     .foregroundStyle(Theme.gold)
 
-                Label("\(engine.player.gold) gold", systemImage: "centsign.circle.fill")
+                Label("\(Formatting.short(engine.player.gold)) gold", systemImage: "centsign.circle.fill")
                     .font(.headline)
                     .foregroundStyle(Theme.gold)
                     .contentTransition(.numericText())
@@ -72,7 +72,7 @@ struct ShopView: View {
                 HStack {
                     Text(item.icon).font(.title2)
                     Spacer()
-                    Label("\(cost)", systemImage: "centsign.circle.fill")
+                    Label(Formatting.short(cost), systemImage: "centsign.circle.fill")
                         .font(.caption.bold())
                         .foregroundStyle(Theme.gold)
                 }

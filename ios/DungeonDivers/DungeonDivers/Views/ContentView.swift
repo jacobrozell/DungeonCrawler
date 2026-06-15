@@ -69,7 +69,7 @@ struct TitleView: View {
                     .foregroundStyle(.secondary)
 
                 if engine.best.hasRecord {
-                    Label("Best: Layer \(engine.best.layer) · Lv \(engine.best.level) · \(engine.best.gold)g",
+                    Label("Best: Layer \(engine.best.layer) · Lv \(engine.best.level) · \(Formatting.short(engine.best.gold))g",
                           systemImage: "trophy.fill")
                         .font(.footnote.bold())
                         .foregroundStyle(Theme.gold)

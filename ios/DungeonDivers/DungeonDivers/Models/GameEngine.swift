@@ -119,6 +119,11 @@ final class GameEngine: ObservableObject {
     /// How many of each permanent upgrade have been bought (drives price scaling).
     @Published private(set) var purchaseCounts: [ShopItem: Int] = [:]
 
+    /// Hybrid idle: when on, a periodic `tick()` auto-plays combat. The player
+    /// still steps in for level-up / shop / ascension choices (tick pauses
+    /// outside `.combat`).
+    @Published var autoBattle = false
+
     private var scaleLevel = 0                       // cumulative enemy strengthening
     private var victoryShown = false                 // celebrate the dragon only once
 
@@ -186,6 +191,29 @@ final class GameEngine: ObservableObject {
         append("— Layer \(layer): Enemy \(enemyIndex) of 5 —", .system)
         append("A \(enemy.name) appears! \(enemy.sprite)", isBoss ? .danger : .info)
         if isBoss { SoundManager.shared.play(.bossAppear) }
+    }
+
+    // MARK: - Idle tick
+
+    func toggleAuto() { autoBattle.toggle() }
+
+    /// Driven by the view's timeline (~1 Hz). Auto-plays one combat action while
+    /// auto-battle is on and we're in a fight; a no-op otherwise.
+    func tick() {
+        guard autoBattle, phase == .combat else { return }
+        perform(autoMove())
+    }
+
+    /// Simple auto-battle heuristic: heal when hurt, otherwise spend mana on the
+    /// strongest move available, else a basic attack.
+    private func autoMove() -> Move {
+        if player.hp * 100 / max(1, player.maxHp) < 35 && player.hp < player.maxHp {
+            return .heal
+        }
+        if player.mana >= Move.magic.manaCost { return .magic }
+        if player.mana >= Move.poison.manaCost { return .poison }
+        if player.mana >= Move.heavy.manaCost { return .heavy }
+        return .attack
     }
 
     // MARK: - Player actions

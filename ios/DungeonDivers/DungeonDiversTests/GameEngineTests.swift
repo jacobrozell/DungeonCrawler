@@ -99,6 +99,22 @@ final class GameEngineTests: XCTestCase {
         XCTAssertFalse(e.player.isAlive)
     }
 
+    func testAutoBattleTickFightsAutomatically() {
+        let e = engine()
+        e.enemy.hp = 1
+        e.autoBattle = true
+        e.tick()                          // auto-plays a move that kills the enemy
+        XCTAssertEqual(e.enemyIndex, 2)   // advanced without manual input
+    }
+
+    func testTickIsNoopWhenAutoOff() {
+        let e = engine()
+        e.enemy.hp = 1
+        let idx = e.enemyIndex
+        e.tick()                          // auto-battle off → nothing happens
+        XCTAssertEqual(e.enemyIndex, idx)
+    }
+
     func testMagicBlockedWithoutMana() {
         let e = engine()
         e.player.spendMana(e.player.mana)   // drain to 0

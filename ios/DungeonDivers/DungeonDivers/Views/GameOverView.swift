@@ -38,10 +38,10 @@ struct GameOverView: View {
                         row("Hero", engine.player.name)
                         row("Level reached", "\(engine.player.level)")
                         row("Layer reached", "\(engine.layer)")
-                        row("Gold collected", "\(engine.player.gold)")
+                        row("Gold collected", Formatting.short(engine.player.gold))
                         Divider().background(Theme.panelStroke)
                         row("Best layer", "\(engine.best.layer)")
-                        row("Best gold", "\(engine.best.gold)")
+                        row("Best gold", Formatting.short(engine.best.gold))
                     }
                 }
                 .padding(.horizontal, 30)

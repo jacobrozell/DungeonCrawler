@@ -23,6 +23,7 @@ struct CombatView: View {
                         CombatLogView(lines: engine.log)
                             .frame(maxHeight: .infinity)
                         playerStatus
+                        autoToggle
                         consumablesRow
                         moveButtons
                     }
@@ -35,6 +36,7 @@ struct CombatView: View {
                     CombatLogView(lines: engine.log)
                         .frame(maxHeight: .infinity)
                     playerStatus
+                    autoToggle
                     consumablesRow
                     moveButtons
                 }
@@ -45,6 +47,26 @@ struct CombatView: View {
         .modifier(Shake(amount: reduceMotion ? 0 : 7,
                         animatableData: CGFloat(engine.shakeTrigger)))
         .animation(.linear(duration: 0.3), value: engine.shakeTrigger)
+        // Hybrid idle: ~1 Hz tick drives auto-battle (no-op when it's off).
+        .onReceive(Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()) { _ in
+            engine.tick()
+        }
+    }
+
+    /// Auto-battle on/off control.
+    private var autoToggle: some View {
+        Button { engine.toggleAuto() } label: {
+            Label(engine.autoBattle ? "Auto-Battle: On" : "Auto-Battle: Off",
+                  systemImage: engine.autoBattle ? "play.circle.fill" : "pause.circle")
+                .font(.subheadline.bold())
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 9)
+                .background(engine.autoBattle ? Theme.mana.opacity(0.85) : Theme.panel)
+                .foregroundStyle(engine.autoBattle ? .white : .primary)
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.panelStroke))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+        }
+        .buttonStyle(PressableButtonStyle())
     }
 
     /// Floating combat number for the given target (player vs. enemy), if any.
@@ -62,7 +84,7 @@ struct CombatView: View {
             Spacer()
             Label("\(engine.enemyIndex)/5", systemImage: "person.fill")
             Spacer()
-            Label("\(engine.player.gold)", systemImage: "centsign.circle.fill")
+            Label(Formatting.short(engine.player.gold), systemImage: "centsign.circle.fill")
                 .foregroundStyle(Theme.gold)
                 .contentTransition(.numericText())
                 .animation(.easeInOut(duration: 0.3), value: engine.player.gold)
