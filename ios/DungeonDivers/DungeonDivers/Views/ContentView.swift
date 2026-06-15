@@ -52,6 +52,7 @@ struct TitleView: View {
                         .textFieldStyle(.roundedBorder)
                         .focused($focused)
                         .submitLabel(.go)
+                        .autocorrectionDisabled()
                         .onSubmit(start)
                 }
             }

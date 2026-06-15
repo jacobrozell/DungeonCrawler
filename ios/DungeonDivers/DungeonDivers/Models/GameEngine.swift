@@ -12,16 +12,6 @@ enum Move: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var icon: String {
-        switch self {
-        case .attack: return "sword.fill"      // falls back gracefully if missing
-        case .heavy:  return "hammer.fill"
-        case .magic:  return "sparkles"
-        case .dodge:  return "figure.run"
-        case .heal:   return "cross.vial.fill"
-        }
-    }
-
     var sfSymbol: String {
         // SF Symbols that are guaranteed to exist across iOS versions.
         switch self {
@@ -74,7 +64,7 @@ final class GameEngine: ObservableObject {
     /// Lightweight animation hooks for the view layer.
     @Published var playerFlash = false
     @Published var enemyFlash = false
-    @Published var screenShake = false
+    @Published var shakeTrigger = 0
 
     private var scaleLevel = 0                       // cumulative enemy strengthening
     private var victoryShown = false                 // celebrate the dragon only once
@@ -232,6 +222,7 @@ final class GameEngine: ObservableObject {
             player.addGold(gold)
             append("You gained \(gold) gold! 🪙", .reward)
             append("The \(enemy.name) was slain!", .reward)
+            Haptics.play(.success)
 
             if enemyIndex == 5 {
                 handleBossDefeated()
@@ -244,6 +235,7 @@ final class GameEngine: ObservableObject {
         if !player.isAlive {
             append("You died on Layer \(layer)… 💀", .danger)
             append("Final gold: \(player.gold). Reached level \(player.level).", .info)
+            Haptics.play(.error)
             phase = .defeat
         }
     }
@@ -294,11 +286,13 @@ final class GameEngine: ObservableObject {
 
     private func flashEnemy() {
         enemyFlash = true
-        screenShake = true
+        shakeTrigger += 1
+        Haptics.play(.light)
     }
 
     private func flashPlayer() {
         playerFlash = true
-        screenShake = true
+        shakeTrigger += 1
+        Haptics.play(.heavy)
     }
 }

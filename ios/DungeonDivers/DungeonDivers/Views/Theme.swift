@@ -1,4 +1,38 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
+
+/// A horizontal shake driven by an incrementing trigger value. Each whole-number
+/// step of `animatableData` plays one full shake cycle.
+struct Shake: GeometryEffect {
+    var amount: CGFloat = 7
+    var shakesPerUnit = 3
+    var animatableData: CGFloat
+
+    func effectValue(size: CGSize) -> ProjectionTransform {
+        let dx = amount * CGFloat(sin(Double(animatableData) * .pi * Double(shakesPerUnit)))
+        return ProjectionTransform(CGAffineTransform(translationX: dx, y: 0))
+    }
+}
+
+/// Thin wrapper around UIKit haptics (no-ops on platforms without UIKit).
+enum Haptics {
+    enum Feel { case light, medium, heavy, success, warning, error }
+
+    static func play(_ feel: Feel) {
+        #if canImport(UIKit)
+        switch feel {
+        case .light:   UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        case .medium:  UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        case .heavy:   UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+        case .success: UINotificationFeedbackGenerator().notificationOccurred(.success)
+        case .warning: UINotificationFeedbackGenerator().notificationOccurred(.warning)
+        case .error:   UINotificationFeedbackGenerator().notificationOccurred(.error)
+        }
+        #endif
+    }
+}
 
 /// Central palette + reusable styling so the dungeon has a consistent look.
 enum Theme {

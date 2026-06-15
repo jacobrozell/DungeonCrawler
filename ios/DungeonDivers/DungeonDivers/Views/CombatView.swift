@@ -14,15 +14,8 @@ struct CombatView: View {
         }
         .padding(.horizontal, 14)
         .padding(.top, 8)
-        .offset(x: engine.screenShake ? 6 : 0)
-        .onChange(of: engine.screenShake) { shaking in
-            if shaking {
-                withAnimation(.default.repeatCount(3, autoreverses: true).speed(6)) {}
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                    engine.screenShake = false
-                }
-            }
-        }
+        .modifier(Shake(animatableData: CGFloat(engine.shakeTrigger)))
+        .animation(.linear(duration: 0.3), value: engine.shakeTrigger)
     }
 
     private var headerBar: some View {
@@ -115,33 +108,43 @@ struct CombatView: View {
     }
 
     private var moveButtons: some View {
+        // The four offensive / evasive moves in a 2×2 grid, with Heal given a
+        // prominent full-width button beneath them.
         let columns = [GridItem(.flexible()), GridItem(.flexible())]
-        return LazyVGrid(columns: columns, spacing: 10) {
-            ForEach(Move.allCases) { move in
-                Button {
-                    engine.perform(move)
-                } label: {
-                    HStack {
-                        Image(systemName: move.sfSymbol)
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(move.rawValue).font(.subheadline.bold())
-                            if move.manaCost > 0 {
-                                Text("\(move.manaCost) mana").font(.caption2)
-                            }
-                        }
-                        Spacer()
-                    }
-                    .padding(.vertical, 12).padding(.horizontal, 12)
-                    .frame(maxWidth: .infinity)
-                    .background(buttonColor(move))
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .opacity(engine.player.mana >= move.manaCost ? 1 : 0.4)
-                }
-                .disabled(engine.player.mana < move.manaCost)
+        let grid = Move.allCases.filter { $0 != .heal }
+        return VStack(spacing: 10) {
+            LazyVGrid(columns: columns, spacing: 10) {
+                ForEach(grid) { moveButton($0) }
             }
+            moveButton(.heal)
         }
         .padding(.bottom, 6)
+    }
+
+    private func moveButton(_ move: Move) -> some View {
+        let affordable = engine.player.mana >= move.manaCost
+        return Button {
+            engine.perform(move)
+        } label: {
+            HStack {
+                Image(systemName: move.sfSymbol)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(move.rawValue).font(.subheadline.bold())
+                    if move.manaCost > 0 {
+                        Text("\(move.manaCost) mana").font(.caption2)
+                    }
+                }
+                Spacer()
+            }
+            .padding(.vertical, 12).padding(.horizontal, 12)
+            .frame(maxWidth: .infinity)
+            .background(buttonColor(move))
+            .foregroundStyle(.white)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .opacity(affordable ? 1 : 0.4)
+        }
+        .buttonStyle(.plain)
+        .disabled(!affordable)
     }
 
     private func buttonColor(_ move: Move) -> Color {
