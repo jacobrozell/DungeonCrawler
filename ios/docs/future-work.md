@@ -14,6 +14,11 @@ directly:
 
 ## Ideas backlog (unscoped — pick and spec before building)
 
+> **Idle/incremental direction:** a dedicated, research-grounded study lives in
+> [`idle-design.md`](idle-design.md) — idle-game patterns (generators, prestige,
+> offline progress, automation) mapped onto Dungeon Divers, with three adoption
+> levels and a build order. Awaiting a pick on how far to pivot.
+
 Candidate additions beyond the current build order, roughly by value:
 
 **Gameplay depth**
