@@ -51,6 +51,15 @@ A lethal blow skips the enemy's retaliation — just like the original's
   reproduces that with a cumulative `scaleLevel` in `GameEngine` instead of
   globals.
 
+## Future work
+
+Design specs for planned features live in
+[`docs/future-work.md`](docs/future-work.md): a **gold shop** (spendable
+economy + consumables), **status effects** (burn / poison / stun and buffs),
+and **sound & music** (an `AVFoundation` `SoundManager` mirroring the haptics
+layer). Includes integration points, balancing knobs, and a shared
+injectable-RNG refactor to make the combat math unit-testable.
+
 ## Project layout
 
 ```
