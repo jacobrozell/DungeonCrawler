@@ -14,6 +14,8 @@ struct ContentView: View {
                 CombatView()
             case .levelUp:
                 LevelUpView()
+            case .shop:
+                ShopView()
             case .victory:
                 GameOverView(won: true)
             case .defeat:

@@ -23,6 +23,7 @@ struct CombatView: View {
                         CombatLogView(lines: engine.log)
                             .frame(maxHeight: .infinity)
                         playerStatus
+                        consumablesRow
                         moveButtons
                     }
                     .frame(maxWidth: .infinity)
@@ -34,6 +35,7 @@ struct CombatView: View {
                     CombatLogView(lines: engine.log)
                         .frame(maxHeight: .infinity)
                     playerStatus
+                    consumablesRow
                     moveButtons
                 }
             }
@@ -161,6 +163,40 @@ struct CombatView: View {
                 }
             }
         }
+    }
+
+    /// Quick-use consumables, shown only when the player is carrying some.
+    @ViewBuilder private var consumablesRow: some View {
+        if engine.player.potions > 0 || engine.player.ethers > 0 {
+            HStack(spacing: 10) {
+                if engine.player.potions > 0 {
+                    consumableButton("🧪", "Potion", count: engine.player.potions) {
+                        engine.usePotion()
+                    }
+                }
+                if engine.player.ethers > 0 {
+                    consumableButton("🔮", "Ether", count: engine.player.ethers) {
+                        engine.useEther()
+                    }
+                }
+            }
+        }
+    }
+
+    private func consumableButton(_ icon: String, _ name: String,
+                                  count: Int, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Text(icon)
+                Text("\(name) ×\(count)").font(.caption.bold())
+            }
+            .padding(.vertical, 8).padding(.horizontal, 12)
+            .frame(maxWidth: .infinity)
+            .background(Theme.panel)
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.panelStroke))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+        }
+        .buttonStyle(PressableButtonStyle())
     }
 
     private var moveButtons: some View {

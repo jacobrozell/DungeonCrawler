@@ -16,6 +16,25 @@ directly:
 
 Newest first. Update this as you land work so whoever picks up next knows the state.
 
+- **2026-06-15 — Step 4: gold shop. DONE.**
+  - `Models/ShopItem.swift`: consumables (potion/ether) + permanent upgrades
+    (whetstone/towerShield/heartVial/luckyCoin) with name/icon/blurb/price.
+  - `Player`: `spendGold`, `potions`/`ethers`, `usePotion`/`useEther`,
+    `upgradeAttack/Defense/MaxHp`, `improveLuck`.
+  - `GameEngine`: new `Phase.shop`; `chooseUpgrade` now routes level-up →
+    `.shop`; `enterNextEncounter()` extracted (spawn + combat/victory);
+    `price`/`canAfford`/`buy`/`leaveShop`; in-combat `usePotion`/`useEther`
+    (cost the turn). `purchaseCounts` drives linear price scaling and resets
+    each run.
+  - `Views/ShopView.swift` (card grid, gold header, dive button); routed in
+    `ContentView`. `CombatView` gains a `consumablesRow` (potions/ethers).
+  - Registered `ShopItem.swift`/`ShopView.swift` in the pbxproj (ids 0014/0015).
+  - Tests added to `GameEngineTests` (shop flow, scaling, broke-guard, potion
+    use). Updated the old level-up test for the new shop hop.
+  - Flow is `boss → levelUp → shop → (victory once) → combat`. Note the shop
+    currently appears *before* the victory screen on the final-boss clear — fine,
+    but reorder in `enterNextEncounter` if that feels off.
+
 - **2026-06-15 — Steps 2 & 3: status effects + poison move/boss debuffs. DONE.**
   - `Models/StatusEffect.swift`: `StatusKind` (burn/poison/stun/guardUp/focus)
     with badge/label, and `StatusEffect` (turns/magnitude/stacks).
@@ -59,8 +78,8 @@ Newest first. Update this as you land work so whoever picks up next knows the st
     target. Do this before relying on `xcodebuild test`.
   - Not build-verified (no Xcode in the authoring environment).
 
-**Build order status:** [x] 1 RNG+tests · [ ] 2 status effects ·
-[ ] 3 poison move/boss debuffs · [ ] 4 gold shop · [ ] 5 sound · [ ] 6 balancing.
+**Build order status:** [x] 1 RNG+tests · [x] 2 status effects ·
+[x] 3 poison move/boss debuffs · [x] 4 gold shop · [ ] 5 sound · [ ] 6 balancing.
 
 ### Testing — wiring the unit-test target
 

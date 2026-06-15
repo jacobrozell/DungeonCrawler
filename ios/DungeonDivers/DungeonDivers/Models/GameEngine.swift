@@ -88,6 +88,7 @@ enum Phase: Equatable {
     case title
     case combat
     case levelUp
+    case shop      // spend gold between layers
     case defeat
     case victory   // reached after felling the Imperial Red Dragon
 }
@@ -115,6 +116,9 @@ final class GameEngine: ObservableObject {
     @Published private(set) var best: BestRun
     @Published private(set) var setNewRecord = false
 
+    /// How many of each permanent upgrade have been bought (drives price scaling).
+    @Published private(set) var purchaseCounts: [ShopItem: Int] = [:]
+
     private var scaleLevel = 0                       // cumulative enemy strengthening
     private var victoryShown = false                 // celebrate the dragon only once
 
@@ -141,6 +145,7 @@ final class GameEngine: ObservableObject {
         victoryShown = false
         setNewRecord = false
         popup = nil
+        purchaseCounts = [:]
         log = []
         append("Welcome to Dungeon Divers, \(player.name)!", .system)
         append("Clear 5 enemies per layer. Every 5th is a boss.", .info)
@@ -411,11 +416,15 @@ final class GameEngine: ObservableObject {
         phase = .levelUp
     }
 
-    /// Called by the level-up screen; resumes combat (or shows victory once).
+    /// Called by the level-up screen; then opens the shop before the next layer.
     func chooseUpgrade(_ upgrade: Player.Upgrade) {
         player.levelUp(upgrade)
         append("Upgraded \(upgrade.label)! Now level \(player.level).", .reward)
+        phase = .shop
+    }
 
+    /// Spawn the next enemy and resume combat — or show the victory screen once.
+    private func enterNextEncounter() {
         spawnNextEnemy()
         if clearedFinalBoss && !victoryShown {
             // Show the victory celebration once, then continue endlessly.
@@ -429,6 +438,69 @@ final class GameEngine: ObservableObject {
     /// From the victory screen: dive on into endless mode.
     func continueEndless() {
         phase = .combat
+    }
+
+    // MARK: - Shop
+
+    /// Current price for an item (permanent upgrades inflate per copy owned).
+    func price(_ item: ShopItem) -> Int {
+        guard item.isPermanent else { return item.basePrice }
+        let owned = purchaseCounts[item, default: 0]
+        return item.basePrice + item.basePrice * owned
+    }
+
+    func canAfford(_ item: ShopItem) -> Bool { player.gold >= price(item) }
+
+    /// Attempt to buy an item; applies its effect and logs the result.
+    func buy(_ item: ShopItem) {
+        guard phase == .shop else { return }
+        let cost = price(item)
+        guard player.spendGold(cost) else {
+            append("Not enough gold for \(item.name).", .miss)
+            Haptics.play(.warning)
+            return
+        }
+
+        switch item {
+        case .potion:      player.addPotions(1)
+        case .ether:       player.addEthers(1)
+        case .whetstone:   player.upgradeAttack()
+        case .towerShield: player.upgradeDefense()
+        case .heartVial:   player.upgradeMaxHp()
+        case .luckyCoin:   player.improveLuck()
+        }
+        if item.isPermanent {
+            purchaseCounts[item, default: 0] += 1
+        }
+        append("Bought \(item.name) for \(cost)g. \(item.icon)", .reward)
+        Haptics.play(.success)
+    }
+
+    /// Leave the shop and dive into the next layer.
+    func leaveShop() {
+        enterNextEncounter()
+    }
+
+    // MARK: - Consumables (used during combat)
+
+    func usePotion() {
+        guard phase == .combat, player.isAlive, player.potions > 0 else { return }
+        let before = player.hp
+        player.usePotion()
+        let healed = player.hp - before
+        showPopup("+\(healed)", .heal, onPlayer: true)
+        append("You quaff a potion (+\(healed) HP). 🧪", .reward)
+        enemyRetaliates(bonusChance: 1)
+        endRound()
+    }
+
+    func useEther() {
+        guard phase == .combat, player.isAlive, player.ethers > 0 else { return }
+        player.useEther()
+        showPopup("Mana", .heal, onPlayer: true)
+        append("You drink an ether and restore mana. 🔮", .reward)
+        enemyRetaliates(bonusChance: 1)
+        endRound()
     }
 
     // MARK: - Records

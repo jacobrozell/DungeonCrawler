@@ -47,6 +47,10 @@ final class Player: Combatant {
 
     var statuses: [StatusEffect] = []
 
+    /// Consumables bought in the shop (see `ShopItem`). Run-scoped.
+    private(set) var potions: Int = 0
+    private(set) var ethers: Int = 0
+
     init(name: String) {
         self.name = name.isEmpty ? "Diver" : name
     }
@@ -68,6 +72,43 @@ final class Player: Combatant {
     func addGold(_ amount: Int) {
         gold += amount
     }
+
+    // MARK: - Shop economy
+
+    /// Spend gold if affordable; returns whether the purchase went through.
+    @discardableResult
+    func spendGold(_ amount: Int) -> Bool {
+        guard gold >= amount else { return false }
+        gold -= amount
+        return true
+    }
+
+    func addPotions(_ n: Int) { potions += n }
+    func addEthers(_ n: Int) { ethers += n }
+
+    /// Quaff a potion: a strong instant heal (`15 × level`). Returns false if none.
+    @discardableResult
+    func usePotion() -> Bool {
+        guard potions > 0 else { return false }
+        potions -= 1
+        restoreHp(15 * level)
+        return true
+    }
+
+    /// Drink an ether: refill mana. Returns false if none.
+    @discardableResult
+    func useEther() -> Bool {
+        guard ethers > 0 else { return false }
+        ethers -= 1
+        restoreMana(maxMana)
+        return true
+    }
+
+    /// Permanent (run-scoped) upgrades sold in the shop.
+    func upgradeAttack(by n: Int = 5) { maxAttack += n; attack = maxAttack }
+    func upgradeDefense(by n: Int = 5) { maxDefense += n; defense = maxDefense }
+    func upgradeMaxHp(by n: Int = 15) { maxHp += n; hp = maxHp }
+    func improveLuck() { luck = max(1, luck - 1) }
 
     /// Faithful port of the Java level-up: chosen stat +10 (HP +20),
     /// all others +5 (HP +10), then refill to the new maximums. The clone

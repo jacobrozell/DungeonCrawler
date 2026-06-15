@@ -40,13 +40,54 @@ final class GameEngineTests: XCTestCase {
         XCTAssertEqual(e.layer, 2)      // advanced after the boss
     }
 
-    func testChooseUpgradeResumesCombat() {
+    func testChooseUpgradeOpensShopThenCombat() {
         let e = engine()
         for _ in 1...5 { e.enemy.hp = 1; e.perform(.attack) }
         e.chooseUpgrade(.attack)
-        XCTAssertEqual(e.phase, .combat)
+        XCTAssertEqual(e.phase, .shop)        // shop sits between level-up and combat
         XCTAssertEqual(e.player.level, 2)
-        XCTAssertEqual(e.enemyIndex, 1)  // first enemy of the new layer
+        e.leaveShop()
+        XCTAssertEqual(e.phase, .combat)
+        XCTAssertEqual(e.enemyIndex, 1)       // first enemy of the new layer
+    }
+
+    func testBuyPermanentUpgradeChargesAndScales() {
+        let e = engine()
+        for _ in 1...5 { e.enemy.hp = 1; e.perform(.attack) }
+        e.chooseUpgrade(.attack)              // now in .shop
+        e.player.addGold(1000)
+        let atkBefore = e.player.attack
+        let first = e.price(.whetstone)
+        e.buy(.whetstone)
+        XCTAssertEqual(e.player.attack, atkBefore + 5)
+        XCTAssertEqual(e.price(.whetstone), first + first) // scales with ownership
+    }
+
+    func testBuyBlockedWhenBroke() {
+        let e = engine()
+        for _ in 1...5 { e.enemy.hp = 1; e.perform(.attack) }
+        e.chooseUpgrade(.attack)
+        // Drain gold below any price.
+        e.player.spendGold(e.player.gold)
+        let goldBefore = e.player.gold
+        let maxHpBefore = e.player.maxHp
+        e.buy(.heartVial)
+        XCTAssertEqual(e.player.gold, goldBefore)   // nothing spent
+        XCTAssertEqual(e.player.maxHp, maxHpBefore) // unchanged
+    }
+
+    func testPotionPurchaseAndUse() {
+        let e = engine()
+        for _ in 1...5 { e.enemy.hp = 1; e.perform(.attack) }
+        e.chooseUpgrade(.attack)
+        e.player.addGold(1000)
+        e.buy(.potion)
+        XCTAssertEqual(e.player.potions, 1)
+        e.leaveShop()
+        e.player.hp = 1
+        e.usePotion()
+        XCTAssertEqual(e.player.potions, 0)
+        XCTAssertGreaterThan(e.player.hp, 1)
     }
 
     func testPlayerDeathEndsRun() {

@@ -20,6 +20,8 @@
 		BF00000000000000000011 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000011 /* Assets.xcassets */; };
 		BF00000000000000000012 /* RandomSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000012 /* RandomSource.swift */; };
 		BF00000000000000000013 /* StatusEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000013 /* StatusEffect.swift */; };
+		BF00000000000000000014 /* ShopItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000014 /* ShopItem.swift */; };
+		BF00000000000000000015 /* ShopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000015 /* ShopView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +39,8 @@
 		FR00000000000000000011 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FR00000000000000000012 /* RandomSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RandomSource.swift; sourceTree = "<group>"; };
 		FR00000000000000000013 /* StatusEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusEffect.swift; sourceTree = "<group>"; };
+		FR00000000000000000014 /* ShopItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopItem.swift; sourceTree = "<group>"; };
+		FR00000000000000000015 /* ShopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,6 +90,7 @@
 				FR00000000000000000005 /* GameEngine.swift */,
 				FR00000000000000000012 /* RandomSource.swift */,
 				FR00000000000000000013 /* StatusEffect.swift */,
+				FR00000000000000000014 /* ShopItem.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -98,6 +103,7 @@
 				FR00000000000000000008 /* CombatView.swift */,
 				FR00000000000000000009 /* LevelUpView.swift */,
 				FR00000000000000000010 /* GameOverView.swift */,
+				FR00000000000000000015 /* ShopView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -183,6 +189,8 @@
 				BF00000000000000000010 /* GameOverView.swift in Sources */,
 				BF00000000000000000012 /* RandomSource.swift in Sources */,
 				BF00000000000000000013 /* StatusEffect.swift in Sources */,
+				BF00000000000000000014 /* ShopItem.swift in Sources */,
+				BF00000000000000000015 /* ShopView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
