@@ -66,10 +66,20 @@ enum SaveStore {
     }
 }
 
-/// Persisted prestige currency (Soul Shards) — meta progression that survives
-/// death and new runs.
+/// Persisted prestige meta — survives death and new runs.
+/// `load`/`save` handle cumulative Soul Shards earned; `loadTree`/`saveTree`
+/// handle the spent skill-tree levels.
 enum PrestigeStore {
-    private static let key = "prestige.shards.v1"
-    static func load() -> Int { UserDefaults.standard.integer(forKey: key) }
-    static func save(_ shards: Int) { UserDefaults.standard.set(shards, forKey: key) }
+    private static let shardsKey = "prestige.shards.v1"
+    private static let treeKey = "prestige.tree.v1"
+
+    static func load() -> Int { UserDefaults.standard.integer(forKey: shardsKey) }
+    static func save(_ shards: Int) { UserDefaults.standard.set(shards, forKey: shardsKey) }
+
+    static func loadTree() -> [String: Int] {
+        (UserDefaults.standard.dictionary(forKey: treeKey) as? [String: Int]) ?? [:]
+    }
+    static func saveTree(_ levels: [String: Int]) {
+        UserDefaults.standard.set(levels, forKey: treeKey)
+    }
 }

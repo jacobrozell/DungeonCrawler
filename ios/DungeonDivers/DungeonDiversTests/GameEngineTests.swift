@@ -159,11 +159,38 @@ final class GameEngineTests: XCTestCase {
         e.ascend()
 
         XCTAssertEqual(e.totalShards, expectedShards)
-        XCTAssertEqual(e.phase, .combat)        // fresh run begins
+        XCTAssertEqual(e.availableShards, expectedShards) // nothing spent yet
+        XCTAssertEqual(e.phase, .combat)                  // fresh run begins
         XCTAssertEqual(e.layer, 1)
-        if expectedShards > 0 {
-            XCTAssertGreaterThan(e.player.attack, baseAttack) // multiplier baked in
-        }
+        XCTAssertEqual(e.player.attack, baseAttack)       // unspent shards = no boost
+    }
+
+    func testSkillTreeSpendBoostsNextRun() {
+        SaveStore.clear()
+        PrestigeStore.save(50)
+        PrestigeStore.saveTree([:])
+        defer { SaveStore.clear(); PrestigeStore.save(0); PrestigeStore.saveTree([:]) }
+
+        let e = GameEngine(playerName: "Hero", rng: ScriptedRandom(fallback: 9))
+        XCTAssertEqual(e.availableShards, 50)
+        let costFirst = e.cost(.might)
+        e.upgradeNode(.might)
+        XCTAssertEqual(e.level(of: .might), 1)
+        XCTAssertEqual(e.availableShards, 50 - costFirst)
+
+        e.startGame(named: "Hero")        // applies +5% attack from Might Lv1
+        XCTAssertGreaterThan(e.player.attack, 25)
+    }
+
+    func testCannotUpgradeBeyondAffordableShards() {
+        SaveStore.clear()
+        PrestigeStore.save(0)
+        PrestigeStore.saveTree([:])
+        defer { SaveStore.clear() }
+        let e = GameEngine(playerName: "Hero", rng: ScriptedRandom(fallback: 9))
+        XCTAssertFalse(e.canUpgrade(.might))   // 0 shards
+        e.upgradeNode(.might)
+        XCTAssertEqual(e.level(of: .might), 0) // no-op
     }
 
     func testAutomationClearsLevelUpWhenUnlocked() {

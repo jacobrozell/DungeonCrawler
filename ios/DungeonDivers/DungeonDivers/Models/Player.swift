@@ -70,12 +70,14 @@ final class Player: Combatant {
         ethers = s.ethers
     }
 
-    /// Scale starting stats by the prestige multiplier (≥ 1) at run start.
-    func applyStartingMultiplier(_ m: Double) {
-        guard m > 1 else { return }
-        maxAttack = Int((Double(maxAttack) * m).rounded()); attack = maxAttack
-        maxDefense = Int((Double(maxDefense) * m).rounded()); defense = maxDefense
-        maxHp = Int((Double(maxHp) * m).rounded()); hp = maxHp
+    /// Scale starting stats by prestige skill-tree multipliers (≥ 1) at run start.
+    func applyPrestige(attackMult: Double, hpMult: Double) {
+        if attackMult > 1 {
+            maxAttack = Int((Double(maxAttack) * attackMult).rounded()); attack = maxAttack
+        }
+        if hpMult > 1 {
+            maxHp = Int((Double(maxHp) * hpMult).rounded()); hp = maxHp
+        }
     }
 
     func restoreHp(_ amount: Int) {

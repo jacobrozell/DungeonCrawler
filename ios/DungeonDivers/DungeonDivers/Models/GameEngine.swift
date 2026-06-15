@@ -123,16 +123,32 @@ final class GameEngine: ObservableObject {
     /// When the app was last backgrounded (for warm-resume offline accrual).
     private var backgroundedAt: Date?
 
-    /// Prestige: Soul Shards persist across runs; each grants +2% to starting
-    /// power and gold income. `runGoldEarned` feeds the shard payout on descent.
+    /// Prestige: Soul Shards (cumulative earned) persist across runs and are
+    /// *spent* in the skill tree (`treeLevels`). `runGoldEarned` feeds the shard
+    /// payout on descent.
     @Published private(set) var totalShards: Int
+    @Published private(set) var treeLevels: [SkillNode: Int]
     @Published private(set) var runGoldEarned = 0
-
-    /// +2% per shard, applied to starting stats and gold gain.
-    var prestigeMultiplier: Double { 1 + 0.02 * Double(totalShards) }
 
     /// Shards awarded for descending now: `floor(sqrt(runGoldEarned / 100))`.
     var pendingShards: Int { Int((Double(runGoldEarned) / 100).squareRoot()) }
+
+    /// Shards already committed to the tree, and what's left to spend.
+    var spentShards: Int {
+        SkillNode.allCases.reduce(0) { total, node in
+            let level = treeLevels[node, default: 0]
+            return total + (0..<level).reduce(0) { $0 + node.cost(currentLevel: $1) }
+        }
+    }
+    var availableShards: Int { max(0, totalShards - spentShards) }
+
+    // Skill-tree effects (all default to neutral at level 0).
+    private func level(_ node: SkillNode) -> Int { treeLevels[node, default: 0] }
+    var attackMultiplier: Double { 1 + 0.05 * Double(level(.might)) }
+    var goldMultiplier: Double { 1 + 0.08 * Double(level(.fortune)) }
+    var hpMultiplier: Double { 1 + 0.06 * Double(level(.vitality)) }
+    var offlineCap: TimeInterval { Double(8 + level(.patience)) * 3600 }
+    var offlineEfficiency: Double { min(1.0, 0.5 + 0.05 * Double(level(.patience))) }
 
     /// How many of each permanent upgrade have been bought (drives price scaling).
     @Published private(set) var purchaseCounts: [ShopItem: Int] = [:]
@@ -156,6 +172,11 @@ final class GameEngine: ObservableObject {
                            isBoss: false, isFinalBoss: false, postGameDepth: 0)
         self.best = BestRun.load()
         self.totalShards = PrestigeStore.load()
+        var levels: [SkillNode: Int] = [:]
+        for (raw, n) in PrestigeStore.loadTree() {
+            if let node = SkillNode(rawValue: raw) { levels[node] = n }
+        }
+        self.treeLevels = levels
         loadIfAvailable()
     }
 
@@ -164,7 +185,7 @@ final class GameEngine: ObservableObject {
     func startGame(named name: String) {
         SaveStore.clear()
         player = Player(name: name)
-        player.applyStartingMultiplier(prestigeMultiplier)
+        player.applyPrestige(attackMult: attackMultiplier, hpMult: hpMultiplier)
         runGoldEarned = 0
         layer = 1
         enemyIndex = 0
@@ -481,7 +502,7 @@ final class GameEngine: ObservableObject {
         }
 
         if !enemy.isAlive {
-            let gold = Int((Double(enemy.generateGold()) * prestigeMultiplier).rounded())
+            let gold = Int((Double(enemy.generateGold()) * goldMultiplier).rounded())
             player.addGold(gold)
             runGoldEarned += gold
             append("You gained \(Formatting.short(gold)) gold! 🪙", .reward)
@@ -556,8 +577,8 @@ final class GameEngine: ObservableObject {
         phase = .combat
     }
 
-    /// Descend: bank `pendingShards`, then restart the run with the new, higher
-    /// prestige multiplier baked into starting stats.
+    /// Descend: bank `pendingShards`, then restart the run. Spend the shards in
+    /// the skill tree to actually boost future runs.
     func ascend() {
         guard phase == .ascension else { return }
         let gained = pendingShards
@@ -565,8 +586,31 @@ final class GameEngine: ObservableObject {
         PrestigeStore.save(totalShards)
         startGame(named: player.name)
         append("You descended into the Abyss and absorbed \(gained) Soul Shards. 🔮", .system)
-        append("Permanent power is now ×\(String(format: "%.2f", prestigeMultiplier)).", .system)
+        append("Spend them in the Soul Tree to grow stronger.", .system)
     }
+
+    // MARK: - Skill tree
+
+    func cost(_ node: SkillNode) -> Int {
+        node.cost(currentLevel: treeLevels[node, default: 0])
+    }
+
+    func canUpgrade(_ node: SkillNode) -> Bool {
+        treeLevels[node, default: 0] < node.maxLevel && availableShards >= cost(node)
+    }
+
+    /// Spend shards to raise a node one level; persists the tree.
+    func upgradeNode(_ node: SkillNode) {
+        guard canUpgrade(node) else { return }
+        treeLevels[node, default: 0] += 1
+        var raw: [String: Int] = [:]
+        for (n, lvl) in treeLevels { raw[n.rawValue] = lvl }
+        PrestigeStore.saveTree(raw)
+        Haptics.play(.success)
+        SoundManager.shared.play(.purchase)
+    }
+
+    func level(of node: SkillNode) -> Int { treeLevels[node, default: 0] }
 
     // MARK: - Shop
 
@@ -724,12 +768,11 @@ final class GameEngine: ObservableObject {
         let elapsed = Date().timeIntervalSince(lastSeen)
         guard elapsed > 60 else { return }            // ignore brief gaps
 
-        let cap: TimeInterval = 8 * 3600              // 8h cap
-        let effective = min(elapsed, cap)
+        let effective = min(elapsed, offlineCap)      // Patience extends the cap
         let dps = Double(max(1, player.attack))
         let killsPerSec = dps / Double(max(1, enemy.maxHp))
         let goldPerSec = killsPerSec * Double(max(1, enemy.generateGold()))
-        let gold = Int(goldPerSec * effective * 0.5 * prestigeMultiplier)  // 50% efficiency
+        let gold = Int(goldPerSec * effective * offlineEfficiency * goldMultiplier)
         guard gold > 0 else { return }
 
         player.addGold(gold)

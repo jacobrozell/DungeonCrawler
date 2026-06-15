@@ -52,6 +52,27 @@ Candidate additions beyond the current build order, roughly by value:
 
 Newest first. Update this as you land work so whoever picks up next knows the state.
 
+- **2026-06-15 — Soul Shard skill tree. DONE.**
+  - Prestige shards are no longer a flat auto-bonus — they're a **spendable
+    currency** in a tree (`Models/SkillNode.swift`): Might (+5% atk/lvl),
+    Fortune (+8% gold/lvl), Vitality (+6% HP/lvl), Patience (+1h offline cap &
+    +5% rate/lvl). Node cost = `baseCost · 1.6^level`, max level 25.
+  - `GameEngine`: `totalShards` (earned) + `treeLevels` (persisted via
+    `PrestigeStore.saveTree`); derived `spentShards`/`availableShards`;
+    `cost`/`canUpgrade`/`upgradeNode`/`level(of:)`; effect getters
+    (`attackMultiplier`/`goldMultiplier`/`hpMultiplier`/`offlineCap`/
+    `offlineEfficiency`) feed `startGame`, gold gain, and offline accrual.
+    Removed the old single `prestigeMultiplier`.
+  - `Views/SkillTreeView.swift` sheet (node cards, buy buttons) reachable from
+    the title screen and the ascension screen. Title/ascension now show
+    *available* shards, not a flat multiplier.
+  - Registered `SkillNode.swift` (0022) + `SkillTreeView.swift` (0023). Tests:
+    spend-boosts-next-run, affordability guard; updated the ascend test (descend
+    banks shards but no longer auto-boosts — you spend in the tree).
+  - **Possible follow-ups:** auto-descend toggle (a Patience-tier node or a
+    setting), more nodes (crit %, starting potions, mana), and a visual
+    tree/graph instead of a flat list. Still pending: the **balancing pass**.
+
 - **2026-06-15 — Hybrid idle Part 4: automation. DONE.**
   - `automationUnlocked` (= `totalShards >= 1`, i.e. after the first prestige):
     `tick()` now also auto-resolves `.levelUp` (round-robin stat picks) and

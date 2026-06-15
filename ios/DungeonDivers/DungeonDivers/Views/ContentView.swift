@@ -57,6 +57,7 @@ struct TitleView: View {
     @State private var name = ""
     @State private var pulse = false
     @State private var showSettings = false
+    @State private var showTree = false
     @FocusState private var focused: Bool
 
     var body: some View {
@@ -86,10 +87,12 @@ struct TitleView: View {
                         .foregroundStyle(Theme.gold)
                 }
                 if engine.totalShards > 0 {
-                    Label("\(engine.totalShards) Soul Shards · ×\(String(format: "%.2f", engine.prestigeMultiplier)) power",
-                          systemImage: "sparkles")
-                        .font(.footnote.bold())
-                        .foregroundStyle(.purple)
+                    Button { showTree = true } label: {
+                        Label("\(engine.availableShards) Soul Shards · Soul Tree",
+                              systemImage: "sparkles")
+                            .font(.footnote.bold())
+                            .foregroundStyle(.purple)
+                    }
                 }
 
                 Panel {
@@ -131,6 +134,7 @@ struct TitleView: View {
             .accessibilityLabel("Settings")
         }
         .sheet(isPresented: $showSettings) { SettingsView() }
+        .sheet(isPresented: $showTree) { SkillTreeView() }
         .onAppear { if !reduceMotion { pulse = true } }
     }
 

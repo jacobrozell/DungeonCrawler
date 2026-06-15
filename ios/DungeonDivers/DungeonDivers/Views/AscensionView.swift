@@ -4,10 +4,7 @@ import SwiftUI
 /// Shards that permanently boost every future run.
 struct AscensionView: View {
     @EnvironmentObject var engine: GameEngine
-
-    private var nextMultiplier: Double {
-        1 + 0.02 * Double(engine.totalShards + engine.pendingShards)
-    }
+    @State private var showTree = false
 
     var body: some View {
         ScrollFit {
@@ -27,11 +24,8 @@ struct AscensionView: View {
 
                 Panel {
                     VStack(spacing: 8) {
-                        row("Soul Shards held", "\(engine.totalShards)")
+                        row("Shards to spend", "\(engine.availableShards)")
                         row("Shards to gain", "+\(engine.pendingShards)")
-                        Divider().background(Theme.panelStroke)
-                        row("Power now", "×\(String(format: "%.2f", engine.prestigeMultiplier))")
-                        row("Power after", "×\(String(format: "%.2f", nextMultiplier))")
                     }
                     .foregroundStyle(.primary)
                 }
@@ -41,6 +35,12 @@ struct AscensionView: View {
                     Text("Earn more gold this run before descending pays off.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                }
+
+                Button { showTree = true } label: {
+                    Label("Open Soul Tree", systemImage: "sparkles")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(.purple)
                 }
 
                 Button {
@@ -68,6 +68,7 @@ struct AscensionView: View {
             }
             .padding(.vertical)
         }
+        .sheet(isPresented: $showTree) { SkillTreeView() }
     }
 
     private func row(_ k: String, _ v: String) -> some View {

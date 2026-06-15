@@ -28,6 +28,8 @@
 		BF00000000000000000019 /* GameSave.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000019 /* GameSave.swift */; };
 		BF00000000000000000020 /* OfflineReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000020 /* OfflineReportView.swift */; };
 		BF00000000000000000021 /* AscensionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000021 /* AscensionView.swift */; };
+		BF00000000000000000022 /* SkillNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000022 /* SkillNode.swift */; };
+		BF00000000000000000023 /* SkillTreeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000023 /* SkillTreeView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -53,6 +55,8 @@
 		FR00000000000000000019 /* GameSave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSave.swift; sourceTree = "<group>"; };
 		FR00000000000000000020 /* OfflineReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineReportView.swift; sourceTree = "<group>"; };
 		FR00000000000000000021 /* AscensionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscensionView.swift; sourceTree = "<group>"; };
+		FR00000000000000000022 /* SkillNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkillNode.swift; sourceTree = "<group>"; };
+		FR00000000000000000023 /* SkillTreeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkillTreeView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +110,7 @@
 				FR00000000000000000016 /* SoundManager.swift */,
 				FR00000000000000000018 /* Formatting.swift */,
 				FR00000000000000000019 /* GameSave.swift */,
+				FR00000000000000000022 /* SkillNode.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -122,6 +127,7 @@
 				FR00000000000000000017 /* SettingsView.swift */,
 				FR00000000000000000020 /* OfflineReportView.swift */,
 				FR00000000000000000021 /* AscensionView.swift */,
+				FR00000000000000000023 /* SkillTreeView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -215,6 +221,8 @@
 				BF00000000000000000019 /* GameSave.swift in Sources */,
 				BF00000000000000000020 /* OfflineReportView.swift in Sources */,
 				BF00000000000000000021 /* AscensionView.swift in Sources */,
+				BF00000000000000000022 /* SkillNode.swift in Sources */,
+				BF00000000000000000023 /* SkillTreeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
