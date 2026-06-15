@@ -3,6 +3,7 @@ import SwiftUI
 struct CombatView: View {
     @EnvironmentObject var engine: GameEngine
     @Environment(\.verticalSizeClass) private var vSizeClass
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// On iPhone, landscape reports a compact height — switch to a side-by-side
     /// layout so nothing gets crushed.
@@ -39,8 +40,18 @@ struct CombatView: View {
         }
         .padding(.horizontal, 14)
         .padding(.top, 8)
-        .modifier(Shake(animatableData: CGFloat(engine.shakeTrigger)))
+        .modifier(Shake(amount: reduceMotion ? 0 : 7,
+                        animatableData: CGFloat(engine.shakeTrigger)))
         .animation(.linear(duration: 0.3), value: engine.shakeTrigger)
+    }
+
+    /// Floating combat number for the given target (player vs. enemy), if any.
+    @ViewBuilder private func popupOverlay(onPlayer: Bool) -> some View {
+        if let p = engine.popup, p.onPlayer == onPlayer {
+            FloatingPopup(popup: p, onClear: { engine.clearPopup($0) })
+                .id(p.id)
+                .allowsHitTesting(false)
+        }
     }
 
     private var headerBar: some View {
@@ -100,10 +111,14 @@ struct CombatView: View {
             .animation(.easeInOut(duration: 0.15), value: engine.enemyFlash)
             .modifier(IdleBob())
             .id(engine.spawnCounter)
-            .transition(.asymmetric(
-                insertion: .scale(scale: 0.4).combined(with: .opacity),
-                removal: .opacity))
-            .animation(.spring(response: 0.45, dampingFraction: 0.6), value: engine.spawnCounter)
+            .transition(reduceMotion
+                        ? .opacity
+                        : .asymmetric(insertion: .scale(scale: 0.4).combined(with: .opacity),
+                                      removal: .opacity))
+            .animation(reduceMotion ? .easeInOut(duration: 0.25)
+                                    : .spring(response: 0.45, dampingFraction: 0.6),
+                       value: engine.spawnCounter)
+            .overlay(alignment: .top) { popupOverlay(onPlayer: false).offset(y: -8) }
             .onChange(of: engine.enemyFlash) { flash in
                 if flash {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
@@ -134,6 +149,7 @@ struct CombatView: View {
                 .foregroundStyle(.secondary)
             }
         }
+        .overlay(alignment: .top) { popupOverlay(onPlayer: true).offset(y: -6) }
         .scaleEffect(engine.playerFlash ? 0.97 : 1.0)
         .animation(.easeInOut(duration: 0.15), value: engine.playerFlash)
         .onChange(of: engine.playerFlash) { flash in
@@ -203,13 +219,47 @@ struct CombatView: View {
 }
 
 /// A slow, looping vertical float to give sprites a sense of life.
+/// Honours Reduce Motion by staying still.
 private struct IdleBob: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var up = false
     func body(content: Content) -> some View {
         content
-            .offset(y: up ? -6 : 4)
+            .offset(y: (up && !reduceMotion) ? -6 : 4)
             .animation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true), value: up)
-            .onAppear { up = true }
+            .onAppear { if !reduceMotion { up = true } }
+    }
+}
+
+/// A combat number/word that rises and fades over a combatant, then removes
+/// itself via `onClear`. Honours Reduce Motion (fades in place, no travel).
+private struct FloatingPopup: View {
+    let popup: CombatPopup
+    let onClear: (UUID) -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var animate = false
+
+    var body: some View {
+        Text(popup.text)
+            .font(popup.flavor == .crit ? .title3.weight(.heavy) : .headline.bold())
+            .foregroundStyle(color)
+            .shadow(color: .black.opacity(0.5), radius: 2, y: 1)
+            .scaleEffect(popup.flavor == .crit && !animate && !reduceMotion ? 1.4 : 1.0)
+            .offset(y: (animate && !reduceMotion) ? -44 : 0)
+            .opacity(animate ? 0 : 1)
+            .onAppear {
+                withAnimation(.easeOut(duration: 0.8)) { animate = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.85) { onClear(popup.id) }
+            }
+    }
+
+    private var color: Color {
+        switch popup.flavor {
+        case .damage: return Theme.hpRed
+        case .crit:   return Theme.gold
+        case .heal:   return Theme.hpGreen
+        case .miss:   return .secondary
+        }
     }
 }
 

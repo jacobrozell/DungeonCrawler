@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GameOverView: View {
     @EnvironmentObject var engine: GameEngine
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let won: Bool
 
     @State private var appeared = false
@@ -12,8 +13,8 @@ struct GameOverView: View {
                 Spacer(minLength: 12)
                 Text(won ? "🐉" : "💀")
                     .font(.system(size: 80))
-                    .scaleEffect(appeared ? 1 : 0.4)
-                    .rotationEffect(.degrees(appeared ? 0 : -15))
+                    .scaleEffect(reduceMotion ? 1 : (appeared ? 1 : 0.4))
+                    .rotationEffect(.degrees(reduceMotion ? 0 : (appeared ? 0 : -15)))
                     .animation(.spring(response: 0.6, dampingFraction: 0.55), value: appeared)
                 Text(won ? "VICTORY!" : "You Died")
                     .font(.system(size: 44, weight: .heavy, design: .serif))
@@ -26,12 +27,21 @@ struct GameOverView: View {
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 30)
 
+                if engine.setNewRecord {
+                    Label("New best run!", systemImage: "trophy.fill")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(Theme.gold)
+                }
+
                 Panel {
                     VStack(alignment: .leading, spacing: 6) {
                         row("Hero", engine.player.name)
                         row("Level reached", "\(engine.player.level)")
                         row("Layer reached", "\(engine.layer)")
                         row("Gold collected", "\(engine.player.gold)")
+                        Divider().background(Theme.panelStroke)
+                        row("Best layer", "\(engine.best.layer)")
+                        row("Best gold", "\(engine.best.gold)")
                     }
                 }
                 .padding(.horizontal, 30)

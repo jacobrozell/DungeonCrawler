@@ -40,6 +40,46 @@ struct LogLine: Identifiable {
     let kind: Kind
 }
 
+/// A transient number/word that floats up over a combatant (e.g. "−42", "CRIT!",
+/// "Miss", "+30"). The view layer watches `GameEngine.popup` and animates it.
+struct CombatPopup: Identifiable, Equatable {
+    enum Flavor { case damage, crit, heal, miss }
+    let id = UUID()
+    let text: String
+    let flavor: Flavor
+    let onPlayer: Bool   // shown over the player panel vs. the enemy sprite
+}
+
+/// Best run achieved so far, persisted across launches via `UserDefaults`.
+struct BestRun: Equatable {
+    var layer: Int
+    var level: Int
+    var gold: Int
+
+    static let empty = BestRun(layer: 1, level: 1, gold: 0)
+    var hasRecord: Bool { layer > 1 || level > 1 || gold > 0 }
+
+    private enum Key {
+        static let layer = "best.layer"
+        static let level = "best.level"
+        static let gold = "best.gold"
+    }
+
+    static func load() -> BestRun {
+        let d = UserDefaults.standard
+        return BestRun(layer: max(1, d.integer(forKey: Key.layer)),
+                       level: max(1, d.integer(forKey: Key.level)),
+                       gold: d.integer(forKey: Key.gold))
+    }
+
+    func save() {
+        let d = UserDefaults.standard
+        d.set(layer, forKey: Key.layer)
+        d.set(level, forKey: Key.level)
+        d.set(gold, forKey: Key.gold)
+    }
+}
+
 /// High-level phases that drive which screen is shown.
 enum Phase: Equatable {
     case title
@@ -66,6 +106,11 @@ final class GameEngine: ObservableObject {
     @Published var enemyFlash = false
     @Published var shakeTrigger = 0
     @Published var spawnCounter = 0      // bumps whenever a new enemy appears
+    @Published var popup: CombatPopup?   // latest floating combat number/word
+
+    /// Best run so far, and whether the last finished run set a new record.
+    @Published private(set) var best: BestRun
+    @Published private(set) var setNewRecord = false
 
     private var scaleLevel = 0                       // cumulative enemy strengthening
     private var victoryShown = false                 // celebrate the dragon only once
@@ -75,6 +120,7 @@ final class GameEngine: ObservableObject {
         self.player = p
         self.enemy = Enemy(kind: Bestiary.fodder[0], scaleLevel: 0,
                            isBoss: false, isFinalBoss: false, postGame: false)
+        self.best = BestRun.load()
     }
 
     // MARK: - Lifecycle
@@ -86,6 +132,8 @@ final class GameEngine: ObservableObject {
         scaleLevel = 0
         clearedFinalBoss = false
         victoryShown = false
+        setNewRecord = false
+        popup = nil
         log = []
         append("Welcome to Dungeon Divers, \(player.name)!", .system)
         append("Clear 5 enemies per layer. Every 5th is a boss.", .info)
@@ -152,13 +200,23 @@ final class GameEngine: ObservableObject {
     /// before the enemy can swing back.
     private func resolveAttack(multiplier: Double, label: String) {
         if Dice.checkHit(chance: player.luck) {
-            let raw = Int(Double(player.attack) * multiplier) - enemy.defense
+            let crit = rollCrit()
+            let critMult = crit ? 2.0 : 1.0
+            let raw = Int(Double(player.attack) * multiplier * critMult) - enemy.defense
             let dmg = max(1, raw)
             enemy.takeHit(dmg)
             flashEnemy()
-            append("Your \(label) hits \(enemy.name) for \(dmg)! 💥", .playerHit)
+            if crit {
+                showPopup("CRIT! −\(dmg)", .crit, onPlayer: false)
+                append("Critical \(label)! \(enemy.name) takes \(dmg)! 💥", .playerHit)
+                Haptics.play(.medium)
+            } else {
+                showPopup("−\(dmg)", .damage, onPlayer: false)
+                append("Your \(label) hits \(enemy.name) for \(dmg)! 💥", .playerHit)
+            }
             if !enemy.isAlive { return }
         } else {
+            showPopup("Miss", .miss, onPlayer: false)
             append("You missed!", .miss)
         }
         enemyRetaliates(bonusChance: 0)
@@ -169,6 +227,7 @@ final class GameEngine: ObservableObject {
         let dmg = max(1, player.attack + 5)
         enemy.takeHit(dmg)
         flashEnemy()
+        showPopup("−\(dmg)", .damage, onPlayer: false)
         append("✨ Your Magic Bolt sears \(enemy.name) for \(dmg)!", .playerHit)
         if !enemy.isAlive { return }
         enemyRetaliates(bonusChance: 0)
@@ -182,11 +241,14 @@ final class GameEngine: ObservableObject {
             let dmg = max(0, enemy.attack - player.defense)
             player.takeHit(dmg)
             flashPlayer()
+            showPopup("−\(dmg)", .damage, onPlayer: true)
             append("\(enemy.name) still landed \(dmg)!", .enemyHit)
         } else {
-            player.restoreHp(5 * player.level)
+            let healed = 5 * player.level
+            player.restoreHp(healed)
             player.restoreMana(4)
-            append("Dodged! You recover \(5 * player.level) HP and focus. 🌀", .reward)
+            showPopup("Dodge +\(healed)", .heal, onPlayer: true)
+            append("Dodged! You recover \(healed) HP and focus. 🌀", .reward)
         }
     }
 
@@ -199,6 +261,7 @@ final class GameEngine: ObservableObject {
         }
         let amount = 10 * player.level
         player.restoreHp(amount)
+        showPopup("+\(amount)", .heal, onPlayer: true)
         append("You quaff a potion and restore \(amount) HP. ❤️", .reward)
         enemyRetaliates(bonusChance: 1)
     }
@@ -210,10 +273,19 @@ final class GameEngine: ObservableObject {
             let dmg = max(0, enemy.attack - player.defense)
             player.takeHit(dmg)
             flashPlayer()
+            showPopup("−\(dmg)", .damage, onPlayer: true)
             append("\(enemy.name) hits you for \(dmg)!", .enemyHit)
         } else {
+            showPopup("Miss", .miss, onPlayer: true)
             append("\(enemy.name) missed!", .miss)
         }
+    }
+
+    /// Crit chance leans on luck: in this game a *lower* luck value lands hits
+    /// more often, so it also crits more. Player luck 3 → ~21%.
+    private func rollCrit() -> Bool {
+        let chance = max(5, (10 - player.luck) * 3)
+        return Int.random(in: 0..<100) < chance
     }
 
     // MARK: - Death handling
@@ -226,6 +298,7 @@ final class GameEngine: ObservableObject {
             append("The \(enemy.name) was slain!", .reward)
             Haptics.play(.success)
 
+            recordRun()
             if enemyIndex == 5 {
                 handleBossDefeated()
             } else {
@@ -238,6 +311,7 @@ final class GameEngine: ObservableObject {
             append("You died on Layer \(layer)… 💀", .danger)
             append("Final gold: \(player.gold). Reached level \(player.level).", .info)
             Haptics.play(.error)
+            recordRun()
             phase = .defeat
         }
     }
@@ -279,7 +353,34 @@ final class GameEngine: ObservableObject {
         phase = .combat
     }
 
+    // MARK: - Records
+
+    /// Roll the current progress into the persisted best run, flagging when this
+    /// run set a new record (shown on the game-over screen).
+    private func recordRun() {
+        var updated = best
+        var improved = false
+        if layer > updated.layer { updated.layer = layer; improved = true }
+        if player.level > updated.level { updated.level = player.level; improved = true }
+        if player.gold > updated.gold { updated.gold = player.gold; improved = true }
+        if improved {
+            best = updated
+            best.save()
+            setNewRecord = true
+        }
+    }
+
     // MARK: - Log + animation helpers
+
+    /// Publish a floating combat number/word. The view animates and then calls
+    /// `clearPopup(_:)` to remove it (only if it's still the same one).
+    private func showPopup(_ text: String, _ flavor: CombatPopup.Flavor, onPlayer: Bool) {
+        popup = CombatPopup(text: text, flavor: flavor, onPlayer: onPlayer)
+    }
+
+    func clearPopup(_ id: UUID) {
+        if popup?.id == id { popup = nil }
+    }
 
     private func append(_ text: String, _ kind: LogLine.Kind) {
         log.append(LogLine(text: text, kind: kind))

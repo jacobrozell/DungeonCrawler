@@ -26,6 +26,7 @@ struct ContentView: View {
 
 struct TitleView: View {
     @EnvironmentObject var engine: GameEngine
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var name = ""
     @State private var pulse = false
     @FocusState private var focused: Bool
@@ -36,8 +37,8 @@ struct TitleView: View {
                 Spacer(minLength: 12)
                 Text("🗡️")
                     .font(.system(size: 72))
-                    .scaleEffect(pulse ? 1.08 : 0.96)
-                    .rotationEffect(.degrees(pulse ? 4 : -4))
+                    .scaleEffect(reduceMotion ? 1 : (pulse ? 1.08 : 0.96))
+                    .rotationEffect(.degrees(reduceMotion ? 0 : (pulse ? 4 : -4)))
                     .animation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true),
                                value: pulse)
                 Text("DUNGEON\nDIVERS")
@@ -49,6 +50,13 @@ struct TitleView: View {
                     .font(.subheadline)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
+
+                if engine.best.hasRecord {
+                    Label("Best: Layer \(engine.best.layer) · Lv \(engine.best.level) · \(engine.best.gold)g",
+                          systemImage: "trophy.fill")
+                        .font(.footnote.bold())
+                        .foregroundStyle(Theme.gold)
+                }
 
                 Panel {
                     VStack(spacing: 12) {
@@ -79,7 +87,7 @@ struct TitleView: View {
             }
             .padding()
         }
-        .onAppear { pulse = true }
+        .onAppear { if !reduceMotion { pulse = true } }
     }
 
     private func start() {

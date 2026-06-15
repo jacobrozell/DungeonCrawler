@@ -25,7 +25,7 @@ No third-party dependencies — pure SwiftUI.
 
 | Move | Origin | Effect |
 |------|--------|--------|
-| **Attack** | original | Standard hit (`ATK − enemy DEF`), can miss via the d10 luck roll. |
+| **Attack** | original | Standard hit (`ATK − enemy DEF`), can miss via the d10 luck roll; can **crit** for 2× (chance scales with luck). |
 | **Heavy Strike** | new | ~1.8× damage, costs 5 mana. |
 | **Magic Bolt** | new | Ignores enemy defense, always lands, costs 8 mana. |
 | **Dodge** | original | Try to avoid the next hit; a clean dodge restores HP + mana. |
@@ -79,7 +79,10 @@ ios/DungeonDivers/
 - Larger **bestiary** (10 fodder types, 7 mid-bosses) with per-enemy sprites
   and colours.
 - Dodge now also restores a little mana on success.
+- **Critical hits** (2× damage, luck-driven) with floating combat numbers.
 - Endless mode after the dragon, plus a run-summary screen.
+- **Best-run persistence** (layer / level / gold) via `UserDefaults`, shown on
+  the title screen and flagged with a "New best run!" badge on game over.
 
 ## Presentation
 
@@ -94,6 +97,9 @@ ios/DungeonDivers/
   - Enemy sprite idle-bob, a spring scale-in when each enemy spawns, and a
     flash + screen shake on every hit.
   - Numeric roll-ups (`contentTransition(.numericText())`) on gold and stats.
+  - Floating combat numbers that rise and fade (damage, **CRIT!**, heals, misses).
   - Tactile button presses (`PressableButtonStyle`), a pulsing title crest,
     and spring entrances on the level-up / victory screens.
   - Haptic feedback on hits, kills and death.
+  - **Reduce Motion** is honoured throughout: the shake, idle-bob, pulsing,
+    spring entrances and floating travel all fall back to still / fade-only.

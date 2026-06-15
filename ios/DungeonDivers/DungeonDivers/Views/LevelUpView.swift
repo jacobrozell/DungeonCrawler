@@ -3,6 +3,7 @@ import SwiftUI
 struct LevelUpView: View {
     @EnvironmentObject var engine: GameEngine
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var appeared = false
 
     var body: some View {
@@ -11,7 +12,7 @@ struct LevelUpView: View {
                 Spacer(minLength: 12)
                 Text("⬆️")
                     .font(.system(size: 64))
-                    .scaleEffect(appeared ? 1 : 0.5)
+                    .scaleEffect(reduceMotion ? 1 : (appeared ? 1 : 0.5))
                     .animation(.spring(response: 0.5, dampingFraction: 0.5), value: appeared)
                 Text("Level Up!")
                     .font(.system(size: 40, weight: .heavy, design: .serif))
