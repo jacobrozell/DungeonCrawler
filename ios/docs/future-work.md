@@ -52,6 +52,29 @@ Candidate additions beyond the current build order, roughly by value:
 
 Newest first. Update this as you land work so whoever picks up next knows the state.
 
+- **2026-06-15 — Offline balance simulation + findings. DONE.**
+  - Added `docs/tools/balance_sim.py` — a Python model of the combat/scaling/
+    economy math (keep constants in sync with `Balance.swift` by hand). Lets us
+    sanity-check pacing without a device. Run: `python3 docs/tools/balance_sim.py`.
+  - **Findings:**
+    - **Campaign (L1–5) is well-paced:** ~62 auto-turns (~1 min on the 1 Hz
+      tick), clears at level 6, ~4,350 gold → **~6 first-prestige shards**. ✓
+    - **Endless wall ≈ layer 10**, and **prestige barely moves it** (Might+Fortune
+      ×big still died ~L10). Root cause: enemy ATK compounds while player
+      mitigation (`atk − def`) is linear, so you eventually take ~full hits and
+      linear HP can't keep up. Attack/gold prestige doesn't fix *survival*.
+    - Split enemy growth (HP ×1.10 vs ATK ×1.06) helped a little (wall L9→L10,
+      fights more attrition than burst) — shipped — but didn't fix the ladder.
+  - **Recommendation (needs a decision):** for a satisfying "each prestige goes
+    deeper" idle ladder, add a **survival lever** — options: (a) a "Ward" prestige
+    node granting **% damage reduction** (sim: ~60% DR pushed the wall to ~L15);
+    (b) make defense **percentage-based** mitigation instead of flat subtraction;
+    (c) much larger prestige multipliers. (a) is the smallest, most idiomatic
+    change. Holding for your call rather than overhauling combat unprompted.
+  - Fixed a real bug found in review: two `.sheet(isPresented:)` on the title
+    view (Settings + Soul Tree) — SwiftUI can drop one; moved the tree sheet onto
+    its button. No Swift compiler here, so this is static review only.
+
 - **2026-06-15 — Balancing pass: "feel like a real game". DONE (first pass).**
   - **Passive mana regen** (`Balance.manaRegenPerTurn = 2`, applied in
     `endRound`): the headline fix — mana never refilled before, so auto-battle

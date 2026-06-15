@@ -93,6 +93,7 @@ struct TitleView: View {
                             .font(.footnote.bold())
                             .foregroundStyle(.purple)
                     }
+                    .sheet(isPresented: $showTree) { SkillTreeView() }
                 }
 
                 Panel {
@@ -134,7 +135,6 @@ struct TitleView: View {
             .accessibilityLabel("Settings")
         }
         .sheet(isPresented: $showSettings) { SettingsView() }
-        .sheet(isPresented: $showTree) { SkillTreeView() }
         .onAppear { if !reduceMotion { pulse = true } }
     }
 

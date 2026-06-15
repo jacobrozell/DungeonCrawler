@@ -35,9 +35,10 @@ final class EnemyTests: XCTestCase {
         let base = make(scale: 5)                       // a layer-6-ish fodder, pre-mult
         let deep = make(scale: 5, postGameDepth: 1)     // same, first post-game layer
         let deeper = make(scale: 5, postGameDepth: 12)  // far into endless
-        XCTAssertGreaterThan(deep.attack, base.attack)  // post-game multiplier kicks in
-        XCTAssertGreaterThan(deeper.attack, deep.attack * 3) // compounds hard
-        XCTAssertGreaterThan(deeper.hp, deep.hp * 3)
+        XCTAssertGreaterThan(deep.attack, base.attack)   // post-game multiplier kicks in
+        XCTAssertGreaterThan(deeper.attack, deep.attack) // ATK compounds (gently)
+        XCTAssertGreaterThan(deeper.hp, deep.hp * 2)     // HP compounds faster
+        XCTAssertGreaterThan(deeper.hp, deeper.attack)   // HP outpaces ATK in endless
     }
 
     func testFinalBossFixedStatBlock() {

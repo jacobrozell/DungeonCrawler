@@ -33,8 +33,11 @@ enum Balance {
     static let bossPoisonChancePercent = 25
 
     // MARK: Enemy scaling
-    /// Per-layer compounding multiplier applied in endless (post-dragon).
-    static let enemyEndlessGrowth = 1.12
+    /// Per-layer compounding multipliers applied in endless (post-dragon).
+    /// HP grows faster than ATK so deep fights get *tankier* (a DPS race) rather
+    /// than one-shotting you — which keeps survival prestige meaningful.
+    static let enemyEndlessHpGrowth = 1.10
+    static let enemyEndlessAtkGrowth = 1.06
 
     // MARK: Shop
     /// Geometric price growth per permanent upgrade owned.
