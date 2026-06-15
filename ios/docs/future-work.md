@@ -12,6 +12,36 @@ directly:
 
 ---
 
+## Ideas backlog (unscoped — pick and spec before building)
+
+Candidate additions beyond the current build order, roughly by value:
+
+**Gameplay depth**
+- Real audio assets + the `feedback(_:_:)` indirection (finishes Step 5).
+- Equipment/relics: persistent passives (lifesteal, thorns, +crit) found or bought.
+- More moves & a small cooldown/charge system; enemy-specific abilities
+  (healer adds, casters that apply burn, armored foes immune to crit).
+- Enemy intent telegraphs ("the dragon is winding up…") for tactical choices.
+- Difficulty modes / daily seed (the `RandomSource` seam already supports it).
+- Boss mechanics (phases, enrage timers, adds).
+
+**Meta-progression**
+- Persistent currency/unlocks across runs (separate from run gold).
+- Achievements; a richer stats screen (kills, crits, gold earned).
+- Multiple playable classes (mage/rogue/warrior) with different kits/stats.
+
+**Polish & feel**
+- Particle/impact effects, parallax dungeon backgrounds per layer.
+- Real app icon + launch screen art (currently placeholder asset slots).
+- Localization (strings are inline today) and Dynamic Type passes.
+- VoiceOver labels on combat state (log already gives full text).
+
+**Technical**
+- Wire the unit-test target (see "Testing") + CI (`xcodebuild test`).
+- Save/restore an in-progress run (`Codable` snapshot of `GameEngine`).
+- SwiftUI previews for each screen; snapshot tests.
+- Extract balancing constants into one tunable `Balance` struct.
+
 ## Progress log (for the next agent)
 
 Newest first. Update this as you land work so whoever picks up next knows the state.
