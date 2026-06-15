@@ -8,7 +8,6 @@ struct DungeonDiversApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(engine)
-                .preferredColorScheme(.dark)
         }
     }
 }

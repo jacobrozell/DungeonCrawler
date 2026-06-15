@@ -74,9 +74,26 @@ ios/DungeonDivers/
 ## What's new vs. the Java version
 
 - Graphical UI: emoji sprites, animated HP/mana bars, hit flashes, scrolling
-  combat log, dark dungeon theme.
+  combat log.
 - **Mana** resource powering the two new moves (Heavy Strike, Magic Bolt).
 - Larger **bestiary** (10 fodder types, 7 mid-bosses) with per-enemy sprites
   and colours.
 - Dodge now also restores a little mana on success.
 - Endless mode after the dragon, plus a run-summary screen.
+
+## Presentation
+
+- **Light & Dark mode** — follows the system setting. Dark Mode is a moody
+  dungeon; Light Mode switches to a readable "stone tablet" palette. Text uses
+  `.primary`/`.secondary` and surface/accent colours adapt via a dynamic
+  `UIColor` provider in `Theme`.
+- **Portrait & landscape** — combat reflows into a side-by-side layout when the
+  height is compact (iPhone landscape); the title, level-up and game-over
+  screens scroll-fit so nothing clips on short screens.
+- **Safe, lightweight animations** (no extra dependencies):
+  - Enemy sprite idle-bob, a spring scale-in when each enemy spawns, and a
+    flash + screen shake on every hit.
+  - Numeric roll-ups (`contentTransition(.numericText())`) on gold and stats.
+  - Tactile button presses (`PressableButtonStyle`), a pulsing title crest,
+    and spring entrances on the level-up / victory screens.
+  - Haptic feedback on hits, kills and death.

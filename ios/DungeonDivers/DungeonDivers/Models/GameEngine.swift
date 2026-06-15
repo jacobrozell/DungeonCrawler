@@ -65,6 +65,7 @@ final class GameEngine: ObservableObject {
     @Published var playerFlash = false
     @Published var enemyFlash = false
     @Published var shakeTrigger = 0
+    @Published var spawnCounter = 0      // bumps whenever a new enemy appears
 
     private var scaleLevel = 0                       // cumulative enemy strengthening
     private var victoryShown = false                 // celebrate the dragon only once
@@ -119,6 +120,7 @@ final class GameEngine: ObservableObject {
 
         enemy = Enemy(kind: kind, scaleLevel: scaleLevel,
                       isBoss: isBoss, isFinalBoss: isFinalBoss, postGame: postGame)
+        spawnCounter += 1
 
         append("— Layer \(layer): Enemy \(enemyIndex) of 5 —", .system)
         append("A \(enemy.name) appears! \(enemy.sprite)", isBoss ? .danger : .info)

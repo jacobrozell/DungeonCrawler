@@ -2,15 +2,40 @@ import SwiftUI
 
 struct CombatView: View {
     @EnvironmentObject var engine: GameEngine
+    @Environment(\.verticalSizeClass) private var vSizeClass
+
+    /// On iPhone, landscape reports a compact height — switch to a side-by-side
+    /// layout so nothing gets crushed.
+    private var isLandscape: Bool { vSizeClass == .compact }
 
     var body: some View {
-        VStack(spacing: 12) {
-            headerBar
-            enemyStage
-            CombatLogView(lines: engine.log)
-                .frame(maxHeight: .infinity)
-            playerStatus
-            moveButtons
+        Group {
+            if isLandscape {
+                HStack(alignment: .top, spacing: 12) {
+                    VStack(spacing: 10) {
+                        headerBar
+                        enemyStage
+                        Spacer(minLength: 0)
+                    }
+                    .frame(maxWidth: .infinity)
+                    VStack(spacing: 10) {
+                        CombatLogView(lines: engine.log)
+                            .frame(maxHeight: .infinity)
+                        playerStatus
+                        moveButtons
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+            } else {
+                VStack(spacing: 12) {
+                    headerBar
+                    enemyStage
+                    CombatLogView(lines: engine.log)
+                        .frame(maxHeight: .infinity)
+                    playerStatus
+                    moveButtons
+                }
+            }
         }
         .padding(.horizontal, 14)
         .padding(.top, 8)
@@ -26,9 +51,11 @@ struct CombatView: View {
             Spacer()
             Label("\(engine.player.gold)", systemImage: "centsign.circle.fill")
                 .foregroundStyle(Theme.gold)
+                .contentTransition(.numericText())
+                .animation(.easeInOut(duration: 0.3), value: engine.player.gold)
         }
         .font(.subheadline.bold())
-        .foregroundStyle(.white.opacity(0.85))
+        .foregroundStyle(.primary.opacity(0.85))
     }
 
     private var enemyStage: some View {
@@ -43,25 +70,15 @@ struct CombatView: View {
                             .font(.caption2.bold())
                             .padding(.horizontal, 6).padding(.vertical, 2)
                             .background(Theme.hpRed)
+                            .foregroundStyle(.white)
                             .clipShape(Capsule())
                     }
                     Spacer()
                     Text("Lv \(engine.enemy.level)")
                         .font(.caption.monospacedDigit())
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(.secondary)
                 }
-                Text(engine.enemy.sprite)
-                    .font(.system(size: 72))
-                    .scaleEffect(engine.enemyFlash ? 1.15 : 1.0)
-                    .opacity(engine.enemyFlash ? 0.5 : 1.0)
-                    .animation(.easeInOut(duration: 0.15), value: engine.enemyFlash)
-                    .onChange(of: engine.enemyFlash) { flash in
-                        if flash {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
-                                engine.enemyFlash = false
-                            }
-                        }
-                    }
+                enemySprite
                 StatBar(value: engine.enemy.hp, maxValue: engine.enemy.maxHp,
                         tint: Theme.hpRed, label: "Enemy HP")
                 HStack(spacing: 16) {
@@ -69,9 +86,31 @@ struct CombatView: View {
                     statChip("shield.lefthalf.filled", engine.enemy.defense)
                 }
                 .font(.caption)
-                .foregroundStyle(.white.opacity(0.75))
+                .foregroundStyle(.secondary)
             }
         }
+    }
+
+    /// Enemy sprite: gently idles, flashes on hit, and animates in on spawn.
+    private var enemySprite: some View {
+        Text(engine.enemy.sprite)
+            .font(.system(size: isLandscape ? 56 : 72))
+            .scaleEffect(engine.enemyFlash ? 1.15 : 1.0)
+            .opacity(engine.enemyFlash ? 0.5 : 1.0)
+            .animation(.easeInOut(duration: 0.15), value: engine.enemyFlash)
+            .modifier(IdleBob())
+            .id(engine.spawnCounter)
+            .transition(.asymmetric(
+                insertion: .scale(scale: 0.4).combined(with: .opacity),
+                removal: .opacity))
+            .animation(.spring(response: 0.45, dampingFraction: 0.6), value: engine.spawnCounter)
+            .onChange(of: engine.enemyFlash) { flash in
+                if flash {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+                        engine.enemyFlash = false
+                    }
+                }
+            }
     }
 
     private var playerStatus: some View {
@@ -82,7 +121,6 @@ struct CombatView: View {
                     Spacer()
                     Text("Lv \(engine.player.level)").font(.caption.monospacedDigit())
                 }
-                .foregroundStyle(.white)
                 StatBar(value: engine.player.hp, maxValue: engine.player.maxHp,
                         tint: Theme.hpGreen, label: "HP")
                 StatBar(value: engine.player.mana, maxValue: engine.player.maxMana,
@@ -93,7 +131,7 @@ struct CombatView: View {
                     statChip("dice.fill", engine.player.luck)
                 }
                 .font(.caption)
-                .foregroundStyle(.white.opacity(0.75))
+                .foregroundStyle(.secondary)
             }
         }
         .scaleEffect(engine.playerFlash ? 0.97 : 1.0)
@@ -143,22 +181,35 @@ struct CombatView: View {
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .opacity(affordable ? 1 : 0.4)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableButtonStyle())
         .disabled(!affordable)
     }
 
     private func buttonColor(_ move: Move) -> Color {
         switch move {
-        case .attack: return Color.red.opacity(0.55)
-        case .heavy:  return Color.orange.opacity(0.55)
-        case .magic:  return Theme.mana.opacity(0.7)
-        case .dodge:  return Color.teal.opacity(0.55)
-        case .heal:   return Theme.hpGreen.opacity(0.55)
+        case .attack: return Color.red.opacity(0.7)
+        case .heavy:  return Color.orange.opacity(0.7)
+        case .magic:  return Theme.mana.opacity(0.85)
+        case .dodge:  return Color.teal.opacity(0.7)
+        case .heal:   return Theme.hpGreen.opacity(0.8)
         }
     }
 
     private func statChip(_ symbol: String, _ value: Int) -> some View {
         Label("\(value)", systemImage: symbol)
+            .contentTransition(.numericText())
+            .animation(.easeInOut(duration: 0.3), value: value)
+    }
+}
+
+/// A slow, looping vertical float to give sprites a sense of life.
+private struct IdleBob: ViewModifier {
+    @State private var up = false
+    func body(content: Content) -> some View {
+        content
+            .offset(y: up ? -6 : 4)
+            .animation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true), value: up)
+            .onAppear { up = true }
     }
 }
 
@@ -180,7 +231,7 @@ struct CombatLogView: View {
                 }
                 .padding(10)
             }
-            .background(Color.black.opacity(0.25))
+            .background(Theme.logBackground)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .onChange(of: lines.count) { _ in
                 if let last = lines.last {
@@ -192,10 +243,10 @@ struct CombatLogView: View {
 
     private func color(for kind: LogLine.Kind) -> Color {
         switch kind {
-        case .info:      return .white.opacity(0.8)
+        case .info:      return .primary.opacity(0.8)
         case .playerHit: return Theme.hpGreen
         case .enemyHit:  return Theme.hpRed
-        case .miss:      return .white.opacity(0.5)
+        case .miss:      return .secondary
         case .reward:    return Theme.gold
         case .system:    return Theme.mana
         case .danger:    return .red
