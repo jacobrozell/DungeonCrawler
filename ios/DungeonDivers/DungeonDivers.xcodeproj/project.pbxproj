@@ -22,6 +22,8 @@
 		BF00000000000000000013 /* StatusEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000013 /* StatusEffect.swift */; };
 		BF00000000000000000014 /* ShopItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000014 /* ShopItem.swift */; };
 		BF00000000000000000015 /* ShopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000015 /* ShopView.swift */; };
+		BF00000000000000000016 /* SoundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000016 /* SoundManager.swift */; };
+		BF00000000000000000017 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000017 /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,6 +43,8 @@
 		FR00000000000000000013 /* StatusEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusEffect.swift; sourceTree = "<group>"; };
 		FR00000000000000000014 /* ShopItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopItem.swift; sourceTree = "<group>"; };
 		FR00000000000000000015 /* ShopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopView.swift; sourceTree = "<group>"; };
+		FR00000000000000000016 /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
+		FR00000000000000000017 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,6 +95,7 @@
 				FR00000000000000000012 /* RandomSource.swift */,
 				FR00000000000000000013 /* StatusEffect.swift */,
 				FR00000000000000000014 /* ShopItem.swift */,
+				FR00000000000000000016 /* SoundManager.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -104,6 +109,7 @@
 				FR00000000000000000009 /* LevelUpView.swift */,
 				FR00000000000000000010 /* GameOverView.swift */,
 				FR00000000000000000015 /* ShopView.swift */,
+				FR00000000000000000017 /* SettingsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -191,6 +197,8 @@
 				BF00000000000000000013 /* StatusEffect.swift in Sources */,
 				BF00000000000000000014 /* ShopItem.swift in Sources */,
 				BF00000000000000000015 /* ShopView.swift in Sources */,
+				BF00000000000000000016 /* SoundManager.swift in Sources */,
+				BF00000000000000000017 /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

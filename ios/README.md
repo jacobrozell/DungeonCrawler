@@ -26,10 +26,13 @@ No third-party dependencies — pure SwiftUI.
 | Move | Origin | Effect |
 |------|--------|--------|
 | **Attack** | original | Standard hit (`ATK − enemy DEF`), can miss via the d10 luck roll; can **crit** for 2× (chance scales with luck). |
-| **Heavy Strike** | new | ~1.8× damage, costs 5 mana. |
-| **Magic Bolt** | new | Ignores enemy defense, always lands, costs 8 mana. |
+| **Heavy Strike** | new | ~1.8× damage, costs 5 mana, 20% chance to **stun**. |
+| **Magic Bolt** | new | Ignores enemy defense, always lands, costs 8 mana, 35% chance to **burn**. |
+| **Poison Dagger** | new | Light hit that stacks **poison** DoT (up to ×5), costs 4 mana. |
 | **Dodge** | original | Try to avoid the next hit; a clean dodge restores HP + mana. |
 | **Heal** | original | Restore `10 × level` HP; enemy gets a slightly better swing. |
+
+Plus **consumables** when carried: 🧪 Potion (instant heal) and 🔮 Ether (refill mana).
 
 A lethal blow skips the enemy's retaliation — just like the original's
 `break` out of the combat switch.
@@ -51,33 +54,51 @@ A lethal blow skips the enemy's retaliation — just like the original's
   reproduces that with a cumulative `scaleLevel` in `GameEngine` instead of
   globals.
 
-## Future work
+## Systems & progression
 
-Design specs for planned features live in
-[`docs/future-work.md`](docs/future-work.md): a **gold shop** (spendable
-economy + consumables), **status effects** (burn / poison / stun and buffs),
-and **sound & music** (an `AVFoundation` `SoundManager` mirroring the haptics
-layer). Includes integration points, balancing knobs, and a shared
-injectable-RNG refactor to make the combat math unit-testable.
+- **Gold shop** between layers: spend gold on consumables (potions, ethers) and
+  permanent run-scoped upgrades (attack, defense, max HP, luck), with prices
+  that scale as you stock up.
+- **Status effects**: burn & poison (damage-over-time that ignores defense),
+  stun (skip a turn), and reserved `guard`/`focus` buff hooks. Shown as badges
+  under each combatant.
+- **Sound & music** via an `AVFoundation` `SoundManager` (mirrors the haptics
+  layer; `.ambient` session so it respects the silent switch and your music).
+  Toggle SFX/music in the title-screen **Settings** sheet. No audio ships yet —
+  the game is silent until files are added (see
+  [`DungeonDivers/Audio/CREDITS.md`](DungeonDivers/Audio/CREDITS.md)).
+- **Deterministic, testable combat** via an injectable `RandomSource`; unit
+  tests live in [`DungeonDiversTests/`](DungeonDivers/DungeonDiversTests).
+
+Remaining plans + a per-step progress log for future contributors are in
+[`docs/future-work.md`](docs/future-work.md).
 
 ## Project layout
 
 ```
 ios/DungeonDivers/
 ├── DungeonDivers.xcodeproj
-└── DungeonDivers/
-    ├── DungeonDiversApp.swift     // @main entry
-    ├── Models/
-    │   ├── Combatant.swift         // shared protocol + d10 hit check
-    │   ├── Player.swift            // hero stats / level-up
-    │   ├── Enemy.swift             // bestiary + scaling
-    │   └── GameEngine.swift        // GameDriver port: state machine + combat
-    └── Views/
-        ├── Theme.swift             // palette, panels, animated stat bars
-        ├── ContentView.swift       // phase router + title screen
-        ├── CombatView.swift        // sprites, health bars, move buttons, log
-        ├── LevelUpView.swift       // stat-choice screen
-        └── GameOverView.swift      // victory / defeat + run summary
+├── DungeonDivers/
+│   ├── DungeonDiversApp.swift      // @main entry
+│   ├── Models/
+│   │   ├── Combatant.swift          // shared protocol + status helpers
+│   │   ├── Player.swift             // hero stats / level-up / economy
+│   │   ├── Enemy.swift              // bestiary + scaling
+│   │   ├── GameEngine.swift         // GameDriver port: state machine + combat
+│   │   ├── RandomSource.swift       // injectable RNG (testable)
+│   │   ├── StatusEffect.swift       // burn / poison / stun / buffs
+│   │   ├── ShopItem.swift           // shop catalogue + pricing
+│   │   └── SoundManager.swift       // AVFoundation audio (graceful no-op)
+│   ├── Views/
+│   │   ├── Theme.swift              // palette, panels, animated stat bars
+│   │   ├── ContentView.swift        // phase router + title + music
+│   │   ├── CombatView.swift         // sprites, bars, moves, log, badges
+│   │   ├── LevelUpView.swift         // stat-choice screen
+│   │   ├── ShopView.swift            // between-layers shop
+│   │   ├── SettingsView.swift        // audio toggles
+│   │   └── GameOverView.swift        // victory / defeat + run summary
+│   └── Audio/CREDITS.md             // where to drop sound/music assets
+└── DungeonDiversTests/              // combat-math tests (target wiring: see docs)
 ```
 
 ## What's new vs. the Java version
@@ -89,6 +110,9 @@ ios/DungeonDivers/
   and colours.
 - Dodge now also restores a little mana on success.
 - **Critical hits** (2× damage, luck-driven) with floating combat numbers.
+- **Status effects** (burn / poison / stun) plus a Poison Dagger move.
+- A **gold shop** + consumables that turn gold into a real economy.
+- **Audio**: SFX/music hooks (`SoundManager`) with a settings sheet.
 - Endless mode after the dragon, plus a run-summary screen.
 - **Best-run persistence** (layer / level / gold) via `UserDefaults`, shown on
   the title screen and flagged with a "New best run!" badge on game over.

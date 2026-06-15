@@ -23,6 +23,20 @@ struct ContentView: View {
             }
         }
         .animation(.easeInOut(duration: 0.25), value: engine.phase)
+        .onAppear { SoundManager.shared.playMusic(Self.track(for: engine.phase)) }
+        .onChange(of: engine.phase) { newPhase in
+            SoundManager.shared.playMusic(Self.track(for: newPhase))
+        }
+    }
+
+    /// Map a game phase to its background track.
+    private static func track(for phase: Phase) -> MusicTrack {
+        switch phase {
+        case .title:                   return .title
+        case .combat, .levelUp, .shop: return .combat
+        case .victory:                 return .victory
+        case .defeat:                  return .gameover
+        }
     }
 }
 
@@ -31,6 +45,7 @@ struct TitleView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var name = ""
     @State private var pulse = false
+    @State private var showSettings = false
     @FocusState private var focused: Bool
 
     var body: some View {
@@ -89,6 +104,16 @@ struct TitleView: View {
             }
             .padding()
         }
+        .overlay(alignment: .topTrailing) {
+            Button { showSettings = true } label: {
+                Image(systemName: "gearshape.fill")
+                    .font(.title2)
+                    .padding()
+            }
+            .foregroundStyle(.secondary)
+            .accessibilityLabel("Settings")
+        }
+        .sheet(isPresented: $showSettings) { SettingsView() }
         .onAppear { if !reduceMotion { pulse = true } }
     }
 

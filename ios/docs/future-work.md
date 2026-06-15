@@ -16,6 +16,27 @@ directly:
 
 Newest first. Update this as you land work so whoever picks up next knows the state.
 
+- **2026-06-15 — Step 5: sound & music (code + wiring). DONE (assets pending).**
+  - `Models/SoundManager.swift`: `SFX`/`MusicTrack` enums + a singleton that
+    plays via `AVFoundation` **iff** the file is in the bundle, else silent
+    no-op. `.ambient` + `.mixWithOthers` session. Toggles read from
+    `UserDefaults` (`audio.sfxEnabled`/`audio.musicEnabled`, default on).
+  - SFX wired at engine trigger points (swing/crit/magic/poison/playerHurt/
+    enemyDie/playerDie/bossAppear/levelUp/victory/purchase/denied), mirroring
+    the haptics.
+  - Music driven by `ContentView.onChange(of: phase)` → `playMusic` (title /
+    combat[+levelUp/shop] / victory / gameover).
+  - `Views/SettingsView.swift` (sheet, `@AppStorage` toggles); gear button added
+    to `TitleView`.
+  - `Audio/CREDITS.md` lists required file names; **no audio ships yet** — the
+    authoring env can't generate binaries. Game is fully playable silent. To
+    enable: drop files in `DungeonDivers/Audio/…`, add to the target's Copy
+    Bundle Resources, fill in the credits table.
+  - Registered `SoundManager.swift`/`SettingsView.swift` in pbxproj (ids 0016/0017).
+  - ⚠️ No tests for audio (hardware side-effecting). The `feedback(_:_:)`
+    indirection from the spec was *not* added — calls are inline next to
+    haptics. Add the indirection + a protocol seam if you want to assert cues.
+
 - **2026-06-15 — Step 4: gold shop. DONE.**
   - `Models/ShopItem.swift`: consumables (potion/ether) + permanent upgrades
     (whetstone/towerShield/heartVial/luckyCoin) with name/icon/blurb/price.
@@ -79,7 +100,8 @@ Newest first. Update this as you land work so whoever picks up next knows the st
   - Not build-verified (no Xcode in the authoring environment).
 
 **Build order status:** [x] 1 RNG+tests · [x] 2 status effects ·
-[x] 3 poison move/boss debuffs · [x] 4 gold shop · [ ] 5 sound · [ ] 6 balancing.
+[x] 3 poison move/boss debuffs · [x] 4 gold shop · [x] 5 sound (code; assets
+pending) · [ ] 6 balancing.
 
 ### Testing — wiring the unit-test target
 

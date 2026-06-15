@@ -184,6 +184,7 @@ final class GameEngine: ObservableObject {
 
         append("— Layer \(layer): Enemy \(enemyIndex) of 5 —", .system)
         append("A \(enemy.name) appears! \(enemy.sprite)", isBoss ? .danger : .info)
+        if isBoss { SoundManager.shared.play(.bossAppear) }
     }
 
     // MARK: - Player actions
@@ -255,9 +256,11 @@ final class GameEngine: ObservableObject {
                 showPopup("CRIT! −\(dmg)", .crit, onPlayer: false)
                 append("Critical \(label)! \(enemy.name) takes \(dmg)! 💥", .playerHit)
                 Haptics.play(.medium)
+                SoundManager.shared.play(.crit)
             } else {
                 showPopup("−\(dmg)", .damage, onPlayer: false)
                 append("Your \(label) hits \(enemy.name) for \(dmg)! 💥", .playerHit)
+                SoundManager.shared.play(.swing)
             }
             if !enemy.isAlive { return }
             if stunChance > 0, rng.chance(stunChance) {
@@ -279,6 +282,7 @@ final class GameEngine: ObservableObject {
         flashEnemy()
         showPopup("−\(dmg)", .damage, onPlayer: false)
         append("✨ Your Magic Bolt sears \(enemy.name) for \(dmg)!", .playerHit)
+        SoundManager.shared.play(.magic)
         if !enemy.isAlive { return }
         if rng.chance(35) {
             enemy.applyStatus(.burn, turns: 3, magnitude: max(2, player.level))
@@ -296,6 +300,7 @@ final class GameEngine: ObservableObject {
             showPopup("−\(dmg)", .damage, onPlayer: false)
             enemy.applyStatus(.poison, turns: 3, magnitude: max(1, player.level), maxStacks: 5)
             append("Poison Dagger bites \(enemy.name) for \(dmg) and poisons it! ☠️", .playerHit)
+            SoundManager.shared.play(.poison)
             if !enemy.isAlive { return }
         } else {
             showPopup("Miss", .miss, onPlayer: false)
@@ -380,6 +385,7 @@ final class GameEngine: ObservableObject {
             append("You gained \(gold) gold! 🪙", .reward)
             append("The \(enemy.name) was slain!", .reward)
             Haptics.play(.success)
+            SoundManager.shared.play(.enemyDie)
 
             recordRun()
             if enemyIndex == 5 {
@@ -394,6 +400,7 @@ final class GameEngine: ObservableObject {
             append("You died on Layer \(layer)… 💀", .danger)
             append("Final gold: \(player.gold). Reached level \(player.level).", .info)
             Haptics.play(.error)
+            SoundManager.shared.play(.playerDie)
             recordRun()
             phase = .defeat
         }
@@ -410,9 +417,11 @@ final class GameEngine: ObservableObject {
             clearedFinalBoss = true
             append("You felled the Imperial Red Dragon! 🐉", .reward)
             append("★ Dungeon Divers complete! ★ Endless mode unlocked.", .system)
+            SoundManager.shared.play(.victory)
         }
 
         append("You leveled up! Choose an upgrade.", .system)
+        SoundManager.shared.play(.levelUp)
         phase = .levelUp
     }
 
@@ -458,6 +467,7 @@ final class GameEngine: ObservableObject {
         guard player.spendGold(cost) else {
             append("Not enough gold for \(item.name).", .miss)
             Haptics.play(.warning)
+            SoundManager.shared.play(.denied)
             return
         }
 
@@ -474,6 +484,7 @@ final class GameEngine: ObservableObject {
         }
         append("Bought \(item.name) for \(cost)g. \(item.icon)", .reward)
         Haptics.play(.success)
+        SoundManager.shared.play(.purchase)
     }
 
     /// Leave the shop and dive into the next layer.
@@ -547,5 +558,6 @@ final class GameEngine: ObservableObject {
         playerFlash = true
         shakeTrigger += 1
         Haptics.play(.heavy)
+        SoundManager.shared.play(.playerHurt)
     }
 }
