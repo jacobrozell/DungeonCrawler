@@ -133,6 +133,39 @@ final class GameEngineTests: XCTestCase {
         XCTAssertEqual(b.phase, .combat)
     }
 
+    func testAscendBanksShardsAndBoostsStartingPower() {
+        SaveStore.clear()
+        PrestigeStore.save(0)
+        defer { SaveStore.clear(); PrestigeStore.save(0) }
+
+        let e = engine()
+        let baseAttack = e.player.attack
+        // Drive many kills, auto-resolving the level-up/shop interruptions, so
+        // enough gold accrues for shards: floor(sqrt(gold/100)).
+        for _ in 0..<40 {
+            switch e.phase {
+            case .combat:  e.enemy.hp = 1; e.perform(.attack)
+            case .levelUp: e.chooseUpgrade(.attack)
+            case .shop:    e.leaveShop()
+            default:       break
+            }
+        }
+        if e.phase == .levelUp { e.chooseUpgrade(.attack) }
+        if e.phase == .shop { e.leaveShop() }
+        let expectedShards = e.pendingShards
+
+        e.enterAscension()
+        XCTAssertEqual(e.phase, .ascension)
+        e.ascend()
+
+        XCTAssertEqual(e.totalShards, expectedShards)
+        XCTAssertEqual(e.phase, .combat)        // fresh run begins
+        XCTAssertEqual(e.layer, 1)
+        if expectedShards > 0 {
+            XCTAssertGreaterThan(e.player.attack, baseAttack) // multiplier baked in
+        }
+    }
+
     func testMagicBlockedWithoutMana() {
         let e = engine()
         e.player.spendMana(e.player.mana)   // drain to 0

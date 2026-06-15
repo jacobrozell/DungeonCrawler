@@ -88,6 +88,13 @@ struct CombatView: View {
                 .foregroundStyle(Theme.gold)
                 .contentTransition(.numericText())
                 .animation(.easeInOut(duration: 0.3), value: engine.player.gold)
+            Spacer()
+            Button { engine.enterAscension() } label: {
+                Label("\(engine.totalShards)", systemImage: "sparkles")
+                    .foregroundStyle(.purple)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Descend / prestige")
         }
         .font(.subheadline.bold())
         .foregroundStyle(.primary.opacity(0.85))

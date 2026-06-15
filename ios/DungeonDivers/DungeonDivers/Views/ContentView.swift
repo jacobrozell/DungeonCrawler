@@ -17,6 +17,8 @@ struct ContentView: View {
                 LevelUpView()
             case .shop:
                 ShopView()
+            case .ascension:
+                AscensionView()
             case .victory:
                 GameOverView(won: true)
             case .defeat:
@@ -42,7 +44,7 @@ struct ContentView: View {
     private static func track(for phase: Phase) -> MusicTrack {
         switch phase {
         case .title:                   return .title
-        case .combat, .levelUp, .shop: return .combat
+        case .combat, .levelUp, .shop, .ascension: return .combat
         case .victory:                 return .victory
         case .defeat:                  return .gameover
         }
@@ -82,6 +84,12 @@ struct TitleView: View {
                           systemImage: "trophy.fill")
                         .font(.footnote.bold())
                         .foregroundStyle(Theme.gold)
+                }
+                if engine.totalShards > 0 {
+                    Label("\(engine.totalShards) Soul Shards · ×\(String(format: "%.2f", engine.prestigeMultiplier)) power",
+                          systemImage: "sparkles")
+                        .font(.footnote.bold())
+                        .foregroundStyle(.purple)
                 }
 
                 Panel {

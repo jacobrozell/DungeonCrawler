@@ -51,6 +51,29 @@ Candidate additions beyond the current build order, roughly by value:
 
 Newest first. Update this as you land work so whoever picks up next knows the state.
 
+- **2026-06-15 — Hybrid idle Part 3: prestige / ascension. DONE.**
+  - Soul Shards persist across runs (`PrestigeStore` in UserDefaults). Each
+    shard = **+2%** to starting Attack/Defense/HP and to gold income
+    (`prestigeMultiplier`). Applied in `startGame` via
+    `Player.applyStartingMultiplier` and to gold in `resolveDeaths`/offline.
+  - `runGoldEarned` tracks this run's gold (persisted in `GameSave`);
+    `pendingShards = floor(sqrt(runGoldEarned / 100))` (square-root scaling,
+    the classic prestige curve).
+  - New `Phase.ascension` + `AscensionView` ("Descend into the Abyss"): shows
+    held/incoming shards and current/next multiplier; `ascend()` banks shards
+    and restarts the run with the higher multiplier baked in; `cancelAscension`
+    backs out. Reachable via the ✨ shard button in the combat header.
+  - Title screen shows total shards + power multiplier; `ContentView` routes
+    `.ascension`. Registered `AscensionView.swift` (0021). Prestige test added.
+  - **Skill tree note:** shards currently grant a single flat global multiplier,
+    not a branching tree (kept scope tight). A future enhancement: spend shards
+    in a tree (×DPS / ×gold / offline-cap / automation unlocks) — that's also
+    where Step 4 automation lives. `idle-design.md` §3–5.
+  - **Remaining hybrid parts:** (4) Automation unlocks (auto-advance after
+    clears, auto-buy cheapest, auto-descend at a threshold), ideally gated by a
+    shard tree. (5) Balancing pass (prestige K=100, +2%/shard, offline rate,
+    cost/enemy curves).
+
 - **2026-06-15 — Hybrid idle Part 2: offline progress + Codable save. DONE.**
   - `Models/GameSave.swift`: `GameSave: Codable` snapshot (player stats + run
     meta), `OfflineReport`, and `SaveStore` (single JSON slot in UserDefaults).

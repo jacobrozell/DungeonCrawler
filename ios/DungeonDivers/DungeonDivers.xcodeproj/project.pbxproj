@@ -27,6 +27,7 @@
 		BF00000000000000000018 /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000018 /* Formatting.swift */; };
 		BF00000000000000000019 /* GameSave.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000019 /* GameSave.swift */; };
 		BF00000000000000000020 /* OfflineReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000020 /* OfflineReportView.swift */; };
+		BF00000000000000000021 /* AscensionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000021 /* AscensionView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -51,6 +52,7 @@
 		FR00000000000000000018 /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
 		FR00000000000000000019 /* GameSave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSave.swift; sourceTree = "<group>"; };
 		FR00000000000000000020 /* OfflineReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineReportView.swift; sourceTree = "<group>"; };
+		FR00000000000000000021 /* AscensionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscensionView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,6 +121,7 @@
 				FR00000000000000000015 /* ShopView.swift */,
 				FR00000000000000000017 /* SettingsView.swift */,
 				FR00000000000000000020 /* OfflineReportView.swift */,
+				FR00000000000000000021 /* AscensionView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -211,6 +214,7 @@
 				BF00000000000000000018 /* Formatting.swift in Sources */,
 				BF00000000000000000019 /* GameSave.swift in Sources */,
 				BF00000000000000000020 /* OfflineReportView.swift in Sources */,
+				BF00000000000000000021 /* AscensionView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

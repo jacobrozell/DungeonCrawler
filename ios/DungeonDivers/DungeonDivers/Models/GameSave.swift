@@ -34,6 +34,7 @@ struct GameSave: Codable {
     var purchaseCounts: [String: Int]   // ShopItem.rawValue → count
     var phase: String                   // restorable phases only: combat/levelUp/shop
     var autoBattle: Bool
+    var runGoldEarned: Int
 
     var lastSeen: Date
 }
@@ -63,4 +64,12 @@ enum SaveStore {
     static func clear() {
         UserDefaults.standard.removeObject(forKey: key)
     }
+}
+
+/// Persisted prestige currency (Soul Shards) — meta progression that survives
+/// death and new runs.
+enum PrestigeStore {
+    private static let key = "prestige.shards.v1"
+    static func load() -> Int { UserDefaults.standard.integer(forKey: key) }
+    static func save(_ shards: Int) { UserDefaults.standard.set(shards, forKey: key) }
 }

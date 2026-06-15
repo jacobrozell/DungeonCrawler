@@ -88,9 +88,10 @@ enum Phase: Equatable {
     case title
     case combat
     case levelUp
-    case shop      // spend gold between layers
+    case shop        // spend gold between layers
+    case ascension   // prestige / "Descend into the Abyss"
     case defeat
-    case victory   // reached after felling the Imperial Red Dragon
+    case victory     // reached after felling the Imperial Red Dragon
 }
 
 /// Observable port of `GameDriver`'s main loop.
@@ -122,6 +123,17 @@ final class GameEngine: ObservableObject {
     /// When the app was last backgrounded (for warm-resume offline accrual).
     private var backgroundedAt: Date?
 
+    /// Prestige: Soul Shards persist across runs; each grants +2% to starting
+    /// power and gold income. `runGoldEarned` feeds the shard payout on descent.
+    @Published private(set) var totalShards: Int
+    @Published private(set) var runGoldEarned = 0
+
+    /// +2% per shard, applied to starting stats and gold gain.
+    var prestigeMultiplier: Double { 1 + 0.02 * Double(totalShards) }
+
+    /// Shards awarded for descending now: `floor(sqrt(runGoldEarned / 100))`.
+    var pendingShards: Int { Int((Double(runGoldEarned) / 100).squareRoot()) }
+
     /// How many of each permanent upgrade have been bought (drives price scaling).
     @Published private(set) var purchaseCounts: [ShopItem: Int] = [:]
 
@@ -143,6 +155,7 @@ final class GameEngine: ObservableObject {
         self.enemy = Enemy(kind: Bestiary.fodder[0], scaleLevel: 0,
                            isBoss: false, isFinalBoss: false, postGameDepth: 0)
         self.best = BestRun.load()
+        self.totalShards = PrestigeStore.load()
         loadIfAvailable()
     }
 
@@ -151,6 +164,8 @@ final class GameEngine: ObservableObject {
     func startGame(named name: String) {
         SaveStore.clear()
         player = Player(name: name)
+        player.applyStartingMultiplier(prestigeMultiplier)
+        runGoldEarned = 0
         layer = 1
         enemyIndex = 0
         scaleLevel = 0
@@ -434,9 +449,10 @@ final class GameEngine: ObservableObject {
         }
 
         if !enemy.isAlive {
-            let gold = enemy.generateGold()
+            let gold = Int((Double(enemy.generateGold()) * prestigeMultiplier).rounded())
             player.addGold(gold)
-            append("You gained \(gold) gold! 🪙", .reward)
+            runGoldEarned += gold
+            append("You gained \(Formatting.short(gold)) gold! 🪙", .reward)
             append("The \(enemy.name) was slain!", .reward)
             Haptics.play(.success)
             SoundManager.shared.play(.enemyDie)
@@ -492,6 +508,32 @@ final class GameEngine: ObservableObject {
     /// From the victory screen: dive on into endless mode.
     func continueEndless() {
         phase = .combat
+    }
+
+    // MARK: - Prestige / ascension
+
+    /// Open the ascension screen (from combat). Auto-battle pauses there.
+    func enterAscension() {
+        guard phase == .combat else { return }
+        phase = .ascension
+    }
+
+    /// Back out of the ascension screen without descending.
+    func cancelAscension() {
+        guard phase == .ascension else { return }
+        phase = .combat
+    }
+
+    /// Descend: bank `pendingShards`, then restart the run with the new, higher
+    /// prestige multiplier baked into starting stats.
+    func ascend() {
+        guard phase == .ascension else { return }
+        let gained = pendingShards
+        totalShards += gained
+        PrestigeStore.save(totalShards)
+        startGame(named: player.name)
+        append("You descended into the Abyss and absorbed \(gained) Soul Shards. 🔮", .system)
+        append("Permanent power is now ×\(String(format: "%.2f", prestigeMultiplier)).", .system)
     }
 
     // MARK: - Shop
@@ -606,7 +648,7 @@ final class GameEngine: ObservableObject {
             layer: layer, enemyIndex: enemyIndex, scaleLevel: scaleLevel,
             clearedFinalBoss: clearedFinalBoss, victoryShown: victoryShown,
             purchaseCounts: counts, phase: phaseStr, autoBattle: autoBattle,
-            lastSeen: Date())
+            runGoldEarned: runGoldEarned, lastSeen: Date())
     }
 
     private func loadIfAvailable() {
@@ -622,6 +664,7 @@ final class GameEngine: ObservableObject {
         clearedFinalBoss = save.clearedFinalBoss
         victoryShown = save.victoryShown
         autoBattle = save.autoBattle
+        runGoldEarned = save.runGoldEarned
 
         var counts: [ShopItem: Int] = [:]
         for (raw, n) in save.purchaseCounts {
@@ -654,10 +697,11 @@ final class GameEngine: ObservableObject {
         let dps = Double(max(1, player.attack))
         let killsPerSec = dps / Double(max(1, enemy.maxHp))
         let goldPerSec = killsPerSec * Double(max(1, enemy.generateGold()))
-        let gold = Int(goldPerSec * effective * 0.5)  // 50% efficiency
+        let gold = Int(goldPerSec * effective * 0.5 * prestigeMultiplier)  // 50% efficiency
         guard gold > 0 else { return }
 
         player.addGold(gold)
+        runGoldEarned += gold
         recordRun()
         offlineReport = OfflineReport(gold: gold, duration: elapsed)
         append("While away, auto-battle earned \(Formatting.short(gold)) gold. 🪙", .reward)

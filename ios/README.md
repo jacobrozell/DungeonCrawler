@@ -56,6 +56,20 @@ A lethal blow skips the enemy's retaliation — just like the original's
   reproduces that with a cumulative `scaleLevel` in `GameEngine` instead of
   globals.
 
+## Idle / incremental layer (hybrid)
+
+Dungeon Divers is a **hybrid active + idle** game (design study in
+[`docs/idle-design.md`](docs/idle-design.md)):
+
+- **Auto-battle** — toggle it on and the hero fights on a ~1 Hz tick; it pauses
+  for level-up / shop / ascension so you still make the meaningful choices.
+- **Offline progress** — an in-progress run auto-resumes on launch, and if you
+  were idling (auto-battle on) you collect capped gold earned while away.
+- **Prestige (Soul Shards)** — "Descend into the Abyss" ends the run for
+  `floor(√(gold/100))` shards that **persist forever**; each grants +2% starting
+  power and gold. Classic incremental ladder-climb.
+- **Big-number formatting** (K/M/B/T/aa…) across all gold/price displays.
+
 ## Systems & progression
 
 - **Gold shop** between layers: spend gold on consumables (potions, ethers) and
