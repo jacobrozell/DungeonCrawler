@@ -89,6 +89,7 @@ struct CombatView: View {
                         .font(.caption.monospacedDigit())
                         .foregroundStyle(.secondary)
                 }
+                StatusBadges(statuses: engine.enemy.statuses)
                 enemySprite
                 StatBar(value: engine.enemy.hp, maxValue: engine.enemy.maxHp,
                         tint: Theme.hpRed, label: "Enemy HP")
@@ -136,6 +137,7 @@ struct CombatView: View {
                     Spacer()
                     Text("Lv \(engine.player.level)").font(.caption.monospacedDigit())
                 }
+                StatusBadges(statuses: engine.player.statuses)
                 StatBar(value: engine.player.hp, maxValue: engine.player.maxHp,
                         tint: Theme.hpGreen, label: "HP")
                 StatBar(value: engine.player.mana, maxValue: engine.player.maxMana,
@@ -162,15 +164,10 @@ struct CombatView: View {
     }
 
     private var moveButtons: some View {
-        // The four offensive / evasive moves in a 2×2 grid, with Heal given a
-        // prominent full-width button beneath them.
+        // Six moves in a tidy 2-column grid (Heal last).
         let columns = [GridItem(.flexible()), GridItem(.flexible())]
-        let grid = Move.allCases.filter { $0 != .heal }
-        return VStack(spacing: 10) {
-            LazyVGrid(columns: columns, spacing: 10) {
-                ForEach(grid) { moveButton($0) }
-            }
-            moveButton(.heal)
+        return LazyVGrid(columns: columns, spacing: 10) {
+            ForEach(Move.allCases) { moveButton($0) }
         }
         .padding(.bottom, 6)
     }
@@ -206,6 +203,7 @@ struct CombatView: View {
         case .attack: return Color.red.opacity(0.7)
         case .heavy:  return Color.orange.opacity(0.7)
         case .magic:  return Theme.mana.opacity(0.85)
+        case .poison: return Color.purple.opacity(0.7)
         case .dodge:  return Color.teal.opacity(0.7)
         case .heal:   return Theme.hpGreen.opacity(0.8)
         }
@@ -215,6 +213,32 @@ struct CombatView: View {
         Label("\(value)", systemImage: symbol)
             .contentTransition(.numericText())
             .animation(.easeInOut(duration: 0.3), value: value)
+    }
+}
+
+/// Row of small status pills (🔥 Burn, ☠️ Poison ×n, 💫 Stun, …) with the
+/// turns remaining. Renders nothing when there are no statuses.
+private struct StatusBadges: View {
+    let statuses: [StatusEffect]
+    var body: some View {
+        if !statuses.isEmpty {
+            HStack(spacing: 6) {
+                ForEach(statuses) { s in
+                    HStack(spacing: 2) {
+                        Text(s.kind.badge)
+                        if s.stacks > 1 { Text("×\(s.stacks)").font(.caption2.bold()) }
+                        Text("\(s.turnsRemaining)").font(.caption2.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.horizontal, 6).padding(.vertical, 3)
+                    .background(Theme.track)
+                    .clipShape(Capsule())
+                }
+                Spacer(minLength: 0)
+            }
+            .font(.caption2)
+            .transition(.opacity)
+        }
     }
 }
 

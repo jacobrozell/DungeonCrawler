@@ -7,6 +7,7 @@ enum Move: String, CaseIterable, Identifiable {
     case attack      = "Attack"
     case heavy       = "Heavy Strike"
     case magic       = "Magic Bolt"
+    case poison      = "Poison Dagger"
     case dodge       = "Dodge"
     case heal        = "Heal"
 
@@ -18,6 +19,7 @@ enum Move: String, CaseIterable, Identifiable {
         case .attack: return "burst.fill"
         case .heavy:  return "hammer.fill"
         case .magic:  return "sparkles"
+        case .poison: return "drop.triangle.fill"
         case .dodge:  return "figure.run"
         case .heal:   return "cross.case.fill"
         }
@@ -25,9 +27,10 @@ enum Move: String, CaseIterable, Identifiable {
 
     var manaCost: Int {
         switch self {
-        case .magic: return 8
-        case .heavy: return 5
-        default:     return 0
+        case .magic:  return 8
+        case .heavy:  return 5
+        case .poison: return 4
+        default:      return 0
         }
     }
 }
@@ -182,6 +185,15 @@ final class GameEngine: ObservableObject {
 
     func perform(_ move: Move) {
         guard phase == .combat else { return }
+
+        // A stunned hero loses the turn; the enemy still gets to act.
+        if player.consumeStunIfNeeded() {
+            append("You are stunned and skip your turn! 💫", .danger)
+            enemyRetaliates(bonusChance: 0)
+            endRound()
+            return
+        }
+
         guard player.mana >= move.manaCost else {
             append("Not enough mana for \(move.rawValue)!", .miss)
             return
@@ -189,20 +201,44 @@ final class GameEngine: ObservableObject {
         player.spendMana(move.manaCost)
 
         switch move {
-        case .attack: resolveAttack(multiplier: 1.0, label: "strike")
-        case .heavy:  resolveAttack(multiplier: 1.8, label: "heavy blow")
+        case .attack: resolveAttack(multiplier: 1.0, label: "strike", stunChance: 0)
+        case .heavy:  resolveAttack(multiplier: 1.8, label: "heavy blow", stunChance: 20)
         case .magic:  resolveMagic()
+        case .poison: resolvePoison()
         case .dodge:  resolveDodge()
         case .heal:   resolveHeal()
         }
 
+        endRound()
+    }
+
+    /// End-of-round upkeep: damage-over-time ticks (enemy then player), then
+    /// centralized death handling. All death detection stays in `resolveDeaths`.
+    private func endRound() {
+        applyTick(to: enemy, onPlayer: false)
+        applyTick(to: player, onPlayer: true)
         resolveDeaths()
     }
 
-    /// Standard / heavy attack. Heavy hits harder but never retaliates if the
-    /// enemy dies first — matching the original where a lethal hit `break`s out
-    /// before the enemy can swing back.
-    private func resolveAttack(multiplier: Double, label: String) {
+    /// Tick one combatant's statuses and surface any DoT as a popup + log line.
+    /// The model's `tickStatuses()` applies the damage and decrements durations;
+    /// this wrapper keeps the UI/feedback in the engine so the model stays clean.
+    private func applyTick(to combatant: Combatant, onPlayer: Bool) {
+        guard combatant.isAlive else { return }
+        let burning = combatant.statuses.contains { $0.kind == .burn }
+        let dot = combatant.tickStatuses()
+        guard dot > 0 else { return }
+        showPopup("−\(dot)", .damage, onPlayer: onPlayer)
+        if onPlayer { flashPlayer() } else { flashEnemy() }
+        let icon = burning ? "🔥" : "☠️"
+        let who = onPlayer ? "You take" : "\(combatant.name) takes"
+        append("\(icon) \(who) \(dot) from lingering effects.", onPlayer ? .enemyHit : .playerHit)
+    }
+
+    /// Standard / heavy attack. Heavy hits harder and can stun, but a lethal
+    /// hit skips the enemy's retaliation — matching the original where a lethal
+    /// hit `break`s out before the enemy can swing back.
+    private func resolveAttack(multiplier: Double, label: String, stunChance: Int) {
         if Dice.checkHit(chance: player.luck, rng: rng) {
             let crit = rollCrit()
             let critMult = crit ? 2.0 : 1.0
@@ -219,6 +255,10 @@ final class GameEngine: ObservableObject {
                 append("Your \(label) hits \(enemy.name) for \(dmg)! 💥", .playerHit)
             }
             if !enemy.isAlive { return }
+            if stunChance > 0, rng.chance(stunChance) {
+                enemy.applyStatus(.stun, turns: 1, magnitude: 0)
+                append("\(enemy.name) is dazed and will lose its next turn! 💫", .reward)
+            }
         } else {
             showPopup("Miss", .miss, onPlayer: false)
             append("You missed!", .miss)
@@ -226,7 +266,8 @@ final class GameEngine: ObservableObject {
         enemyRetaliates(bonusChance: 0)
     }
 
-    /// Magic Bolt: ignores enemy defense and always lands, but costs mana.
+    /// Magic Bolt: ignores enemy defense, always lands, and may set the enemy
+    /// ablaze (burn DoT). Costs mana.
     private func resolveMagic() {
         let dmg = max(1, player.attack + 5)
         enemy.takeHit(dmg)
@@ -234,6 +275,27 @@ final class GameEngine: ObservableObject {
         showPopup("−\(dmg)", .damage, onPlayer: false)
         append("✨ Your Magic Bolt sears \(enemy.name) for \(dmg)!", .playerHit)
         if !enemy.isAlive { return }
+        if rng.chance(35) {
+            enemy.applyStatus(.burn, turns: 3, magnitude: max(2, player.level))
+            append("\(enemy.name) catches fire! 🔥", .reward)
+        }
+        enemyRetaliates(bonusChance: 0)
+    }
+
+    /// Poison Dagger: a light direct hit that stacks poison DoT. Cheap mana.
+    private func resolvePoison() {
+        if Dice.checkHit(chance: player.luck, rng: rng) {
+            let dmg = max(1, player.attack / 2 - enemy.defense)
+            enemy.takeHit(dmg)
+            flashEnemy()
+            showPopup("−\(dmg)", .damage, onPlayer: false)
+            enemy.applyStatus(.poison, turns: 3, magnitude: max(1, player.level), maxStacks: 5)
+            append("Poison Dagger bites \(enemy.name) for \(dmg) and poisons it! ☠️", .playerHit)
+            if !enemy.isAlive { return }
+        } else {
+            showPopup("Miss", .miss, onPlayer: false)
+            append("Your Poison Dagger misses!", .miss)
+        }
         enemyRetaliates(bonusChance: 0)
     }
 
@@ -271,14 +333,25 @@ final class GameEngine: ObservableObject {
     }
 
     /// Enemy's swing back, ported from the shared `e1.checkHit` blocks.
+    /// A stunned enemy forfeits the swing. Bosses may inflict poison on a hit.
     private func enemyRetaliates(bonusChance: Int) {
         guard enemy.isAlive else { return }
+        if enemy.consumeStunIfNeeded() {
+            append("\(enemy.name) is stunned and can't strike! 💫", .reward)
+            return
+        }
         if Dice.checkHit(chance: enemy.luck + bonusChance, rng: rng) {
-            let dmg = max(0, enemy.attack - player.defense)
+            // Guard buff softens incoming hits while active.
+            let guardBonus = player.statuses.contains { $0.kind == .guardUp } ? 5 : 0
+            let dmg = max(0, enemy.attack - player.defense - guardBonus)
             player.takeHit(dmg)
             flashPlayer()
             showPopup("−\(dmg)", .damage, onPlayer: true)
             append("\(enemy.name) hits you for \(dmg)!", .enemyHit)
+            if enemy.isBoss, player.isAlive, rng.chance(25) {
+                player.applyStatus(.poison, turns: 2, magnitude: max(1, enemy.level), maxStacks: 3)
+                append("\(enemy.name)'s strike leaves you poisoned! ☠️", .danger)
+            }
         } else {
             showPopup("Miss", .miss, onPlayer: true)
             append("\(enemy.name) missed!", .miss)
@@ -286,9 +359,11 @@ final class GameEngine: ObservableObject {
     }
 
     /// Crit chance leans on luck: in this game a *lower* luck value lands hits
-    /// more often, so it also crits more. Player luck 3 → ~21%.
+    /// more often, so it also crits more. Player luck 3 → ~21%. A `focus` buff
+    /// adds a flat bonus while active.
     private func rollCrit() -> Bool {
-        rng.chance(max(5, (10 - player.luck) * 3))
+        let focusBonus = player.statuses.contains { $0.kind == .focus } ? 25 : 0
+        return rng.chance(max(5, (10 - player.luck) * 3) + focusBonus)
     }
 
     // MARK: - Death handling

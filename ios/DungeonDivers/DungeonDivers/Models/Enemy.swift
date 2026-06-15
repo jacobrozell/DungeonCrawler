@@ -55,6 +55,7 @@ final class Enemy: Combatant {
     private(set) var defense: Int
     private(set) var luck: Int
     private(set) var level: Int
+    var statuses: [StatusEffect] = []
 
     let isBoss: Bool
 

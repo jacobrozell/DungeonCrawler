@@ -45,6 +45,8 @@ final class Player: Combatant {
     private(set) var maxMana: Int = 20
     var mana: Int = 20
 
+    var statuses: [StatusEffect] = []
+
     init(name: String) {
         self.name = name.isEmpty ? "Diver" : name
     }

@@ -21,6 +21,7 @@ protocol Combatant: AnyObject {
     var defense: Int { get }
     var luck: Int { get }
     var level: Int { get }
+    var statuses: [StatusEffect] { get set }
 }
 
 extension Combatant {
@@ -37,5 +38,50 @@ extension Combatant {
         // drop below zero.
         hp -= max(0, amount)
         if hp < 0 { hp = 0 }
+    }
+
+    // MARK: - Status effects
+
+    /// Add a status, or refresh/stack an existing one of the same kind.
+    /// Refreshing keeps the longer duration and stronger magnitude; `poison`
+    /// also accrues stacks up to `maxStacks`.
+    func applyStatus(_ kind: StatusKind, turns: Int, magnitude: Int, maxStacks: Int = 1) {
+        if let i = statuses.firstIndex(where: { $0.kind == kind }) {
+            statuses[i].turnsRemaining = max(statuses[i].turnsRemaining, turns)
+            statuses[i].magnitude = max(statuses[i].magnitude, magnitude)
+            statuses[i].stacks = min(maxStacks, statuses[i].stacks + 1)
+        } else {
+            statuses.append(StatusEffect(kind: kind, turnsRemaining: turns,
+                                         magnitude: magnitude, stacks: 1))
+        }
+    }
+
+    var isStunned: Bool { statuses.contains { $0.kind == .stun } }
+
+    /// Removes one stun if present; returns whether the turn should be skipped.
+    func consumeStunIfNeeded() -> Bool {
+        guard let i = statuses.firstIndex(where: { $0.kind == .stun }) else { return false }
+        statuses.remove(at: i)
+        return true
+    }
+
+    /// Total damage-over-time this round (bypasses defense by design).
+    func damageOverTimeThisTurn() -> Int {
+        statuses.filter { $0.kind.isDamageOverTime }
+                .reduce(0) { $0 + $1.magnitude * $1.stacks }
+    }
+
+    /// Apply one round of DoT and decrement timed statuses; drop the expired.
+    /// `stun` is *not* time-decremented — it's consumed by the victim's next
+    /// action (`consumeStunIfNeeded`), so it survives the end-of-round tick.
+    /// Returns the DoT damage dealt (0 if none) for the caller to surface.
+    func tickStatuses() -> Int {
+        let dot = damageOverTimeThisTurn()
+        if dot > 0 { takeHit(dot) }
+        for i in statuses.indices where statuses[i].kind != .stun {
+            statuses[i].turnsRemaining -= 1
+        }
+        statuses.removeAll { $0.turnsRemaining <= 0 && $0.kind != .stun }
+        return dot
     }
 }

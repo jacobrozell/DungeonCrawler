@@ -16,6 +16,33 @@ directly:
 
 Newest first. Update this as you land work so whoever picks up next knows the state.
 
+- **2026-06-15 — Steps 2 & 3: status effects + poison move/boss debuffs. DONE.**
+  - `Models/StatusEffect.swift`: `StatusKind` (burn/poison/stun/guardUp/focus)
+    with badge/label, and `StatusEffect` (turns/magnitude/stacks).
+  - `Combatant` now requires `statuses: [StatusEffect]`; extension adds
+    `applyStatus` (refresh + stack), `isStunned`, `consumeStunIfNeeded`,
+    `damageOverTimeThisTurn`, and `tickStatuses()`. **Stun is consumed by
+    action, not time** — `tickStatuses` deliberately does not decrement stun.
+  - `GameEngine`: `perform` handles a stunned hero; `endRound()` runs the DoT
+    tick (enemy then player) and then `resolveDeaths()` — all death detection
+    stays centralized. DoT bypasses defense and surfaces via the existing
+    popup/log/flash.
+  - Application: Magic→burn (35%), Heavy→stun (20%), new **Poison Dagger**
+    move (`Move.poison`, 4 mana, stacks poison up to ×5), bosses→poison on the
+    player (25%). `guardUp`/`focus` buff hooks exist in `enemyRetaliates`/
+    `rollCrit` but nothing applies them yet (reserved for shop items).
+  - UI: `StatusBadges` row under each combatant; Poison Dagger added to the
+    (now 6-button, 2-column) move grid + `buttonColor`.
+  - Tests: `DungeonDiversTests/StatusEffectTests.swift` (model + 2 engine
+    integration tests).
+  - `RandomSource.swift` and `StatusEffect.swift` were added to the app target
+    in the hand-written pbxproj (FR/BF/Sources/Models group) — see "Adding new
+    source files". Test files are in the (still-unwired) test target.
+  - Note: a heavy-strike stun lands on the enemy *before* its same-turn
+    retaliation, so in practice it negates that immediate counterattack. This is
+    intentional and consistent ("skip your next action"). Nothing currently
+    stuns the *player*, so the hero-stun branch in `perform` is reserved.
+
 - **2026-06-15 — Step 1: injectable RNG + combat-math tests. DONE.**
   - Added `Models/RandomSource.swift`: `RandomSource` protocol with `roll(_:)`,
     plus `chance(_:)` / `element(_:)` helpers, `SystemRandom` (production), and
@@ -52,6 +79,20 @@ to verify). To enable the tests:
 
 (If a future agent does have a working Xcode/CLI, wiring it directly into the
 pbxproj is fine — just verify the project still opens.)
+
+### Adding new source files (hand-written pbxproj)
+
+The `.xcodeproj/project.pbxproj` is maintained by hand (no Xcode here). Adding
+an app-target Swift file means four parallel insertions, following the existing
+`BF…`/`FR…` numbering (next free id is **0014**):
+
+1. **PBXBuildFile**: `BF00…NN /* X.swift in Sources */ = {… fileRef = FR00…NN …};`
+2. **PBXFileReference**: `FR00…NN /* X.swift */ = {… path = X.swift; …};`
+3. **PBXGroup** (`Models` `GR…0003` or `Views` `GR…0004`): add the `FR…NN` child.
+4. **PBXSourcesBuildPhase** (`SR…0000`): add the `BF…NN` entry.
+
+Keep ids unique and the `/* comments */` consistent so the file stays readable.
+If you have Xcode, just drag the file in instead.
 
 ---
 

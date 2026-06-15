@@ -18,6 +18,8 @@
 		BF00000000000000000009 /* LevelUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000009 /* LevelUpView.swift */; };
 		BF00000000000000000010 /* GameOverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000010 /* GameOverView.swift */; };
 		BF00000000000000000011 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000011 /* Assets.xcassets */; };
+		BF00000000000000000012 /* RandomSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000012 /* RandomSource.swift */; };
+		BF00000000000000000013 /* StatusEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000013 /* StatusEffect.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,6 +35,8 @@
 		FR00000000000000000009 /* LevelUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelUpView.swift; sourceTree = "<group>"; };
 		FR00000000000000000010 /* GameOverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverView.swift; sourceTree = "<group>"; };
 		FR00000000000000000011 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		FR00000000000000000012 /* RandomSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RandomSource.swift; sourceTree = "<group>"; };
+		FR00000000000000000013 /* StatusEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusEffect.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +84,8 @@
 				FR00000000000000000003 /* Player.swift */,
 				FR00000000000000000004 /* Enemy.swift */,
 				FR00000000000000000005 /* GameEngine.swift */,
+				FR00000000000000000012 /* RandomSource.swift */,
+				FR00000000000000000013 /* StatusEffect.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -175,6 +181,8 @@
 				BF00000000000000000008 /* CombatView.swift in Sources */,
 				BF00000000000000000009 /* LevelUpView.swift in Sources */,
 				BF00000000000000000010 /* GameOverView.swift in Sources */,
+				BF00000000000000000012 /* RandomSource.swift in Sources */,
+				BF00000000000000000013 /* StatusEffect.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
