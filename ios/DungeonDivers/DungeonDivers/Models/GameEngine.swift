@@ -27,9 +27,9 @@ enum Move: String, CaseIterable, Identifiable {
 
     var manaCost: Int {
         switch self {
-        case .magic:  return 8
-        case .heavy:  return 5
-        case .poison: return 4
+        case .magic:  return Balance.magicManaCost
+        case .heavy:  return Balance.heavyManaCost
+        case .poison: return Balance.poisonManaCost
         default:      return 0
         }
     }
@@ -130,8 +130,8 @@ final class GameEngine: ObservableObject {
     @Published private(set) var treeLevels: [SkillNode: Int]
     @Published private(set) var runGoldEarned = 0
 
-    /// Shards awarded for descending now: `floor(sqrt(runGoldEarned / 100))`.
-    var pendingShards: Int { Int((Double(runGoldEarned) / 100).squareRoot()) }
+    /// Shards awarded for descending now: `floor(sqrt(runGoldEarned / K))`.
+    var pendingShards: Int { Int((Double(runGoldEarned) / Balance.prestigeShardDivisor).squareRoot()) }
 
     /// Shards already committed to the tree, and what's left to spend.
     var spentShards: Int {
@@ -144,11 +144,16 @@ final class GameEngine: ObservableObject {
 
     // Skill-tree effects (all default to neutral at level 0).
     private func level(_ node: SkillNode) -> Int { treeLevels[node, default: 0] }
-    var attackMultiplier: Double { 1 + 0.05 * Double(level(.might)) }
-    var goldMultiplier: Double { 1 + 0.08 * Double(level(.fortune)) }
-    var hpMultiplier: Double { 1 + 0.06 * Double(level(.vitality)) }
-    var offlineCap: TimeInterval { Double(8 + level(.patience)) * 3600 }
-    var offlineEfficiency: Double { min(1.0, 0.5 + 0.05 * Double(level(.patience))) }
+    var attackMultiplier: Double { 1 + Balance.mightAttackPerLevel * Double(level(.might)) }
+    var goldMultiplier: Double { 1 + Balance.fortuneGoldPerLevel * Double(level(.fortune)) }
+    var hpMultiplier: Double { 1 + Balance.vitalityHpPerLevel * Double(level(.vitality)) }
+    var offlineCap: TimeInterval {
+        (Balance.baseOfflineHours + Double(Balance.patienceHoursPerLevel * level(.patience))) * 3600
+    }
+    var offlineEfficiency: Double {
+        min(Balance.maxOfflineEfficiency,
+            Balance.baseOfflineEfficiency + Balance.patienceEfficiencyPerLevel * Double(level(.patience)))
+    }
 
     /// How many of each permanent upgrade have been bought (drives price scaling).
     @Published private(set) var purchaseCounts: [ShopItem: Int] = [:]
@@ -246,7 +251,7 @@ final class GameEngine: ObservableObject {
 
     /// Automation (auto-resolve level-up & shop so idle doesn't stall) unlocks
     /// after the first prestige — early runs stay hands-on.
-    var automationUnlocked: Bool { totalShards >= 1 }
+    var automationUnlocked: Bool { totalShards >= Balance.automationUnlockShards }
 
     /// Driven by the view's timeline (~1 Hz). With auto-battle on: plays a combat
     /// action, and — once automation is unlocked — also clears the between-layer
@@ -316,7 +321,8 @@ final class GameEngine: ObservableObject {
 
         switch move {
         case .attack: resolveAttack(multiplier: 1.0, label: "strike", stunChance: 0)
-        case .heavy:  resolveAttack(multiplier: 1.8, label: "heavy blow", stunChance: 20)
+        case .heavy:  resolveAttack(multiplier: Balance.heavyDamageMultiplier,
+                                    label: "heavy blow", stunChance: Balance.heavyStunChancePercent)
         case .magic:  resolveMagic()
         case .poison: resolvePoison()
         case .dodge:  resolveDodge()
@@ -329,6 +335,8 @@ final class GameEngine: ObservableObject {
     /// End-of-round upkeep: damage-over-time ticks (enemy then player), then
     /// centralized death handling. All death detection stays in `resolveDeaths`.
     private func endRound() {
+        // Passive mana regen keeps the ability kit usable over a fight.
+        if player.isAlive { player.restoreMana(Balance.manaRegenPerTurn) }
         applyTick(to: enemy, onPlayer: false)
         applyTick(to: player, onPlayer: true)
         resolveDeaths()
@@ -385,14 +393,14 @@ final class GameEngine: ObservableObject {
     /// Magic Bolt: ignores enemy defense, always lands, and may set the enemy
     /// ablaze (burn DoT). Costs mana.
     private func resolveMagic() {
-        let dmg = max(1, player.attack + 5)
+        let dmg = max(1, player.attack + Balance.magicFlatBonus)
         enemy.takeHit(dmg)
         flashEnemy()
         showPopup("−\(dmg)", .damage, onPlayer: false)
         append("✨ Your Magic Bolt sears \(enemy.name) for \(dmg)!", .playerHit)
         SoundManager.shared.play(.magic)
         if !enemy.isAlive { return }
-        if rng.chance(35) {
+        if rng.chance(Balance.magicBurnChancePercent) {
             enemy.applyStatus(.burn, turns: 3, magnitude: max(2, player.level))
             append("\(enemy.name) catches fire! 🔥", .reward)
         }
@@ -466,7 +474,7 @@ final class GameEngine: ObservableObject {
             flashPlayer()
             showPopup("−\(dmg)", .damage, onPlayer: true)
             append("\(enemy.name) hits you for \(dmg)!", .enemyHit)
-            if enemy.isBoss, player.isAlive, rng.chance(25) {
+            if enemy.isBoss, player.isAlive, rng.chance(Balance.bossPoisonChancePercent) {
                 player.applyStatus(.poison, turns: 2, magnitude: max(1, enemy.level), maxStacks: 3)
                 append("\(enemy.name)'s strike leaves you poisoned! ☠️", .danger)
             }
@@ -481,7 +489,7 @@ final class GameEngine: ObservableObject {
     /// adds a flat bonus while active.
     private func rollCrit() -> Bool {
         let focusBonus = player.statuses.contains { $0.kind == .focus } ? 25 : 0
-        return rng.chance(max(5, (10 - player.luck) * 3) + focusBonus)
+        return rng.chance(max(Balance.minCritChancePercent, (10 - player.luck) * 3) + focusBonus)
     }
 
     // MARK: - Death handling
@@ -620,7 +628,7 @@ final class GameEngine: ObservableObject {
     func price(_ item: ShopItem) -> Int {
         guard item.isPermanent else { return item.basePrice }
         let owned = purchaseCounts[item, default: 0]
-        return Int((Double(item.basePrice) * pow(1.7, Double(owned))).rounded())
+        return Int((Double(item.basePrice) * pow(Balance.shopPriceGrowth, Double(owned))).rounded())
     }
 
     func canAfford(_ item: ShopItem) -> Bool { player.gold >= price(item) }

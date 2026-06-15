@@ -48,7 +48,7 @@ struct CombatView: View {
                         animatableData: CGFloat(engine.shakeTrigger)))
         .animation(.linear(duration: 0.3), value: engine.shakeTrigger)
         // Hybrid idle: ~1 Hz tick drives auto-battle (no-op when it's off).
-        .onReceive(Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()) { _ in
+        .onReceive(Timer.publish(every: Balance.tickSeconds, on: .main, in: .common).autoconnect()) { _ in
             engine.tick()
         }
     }

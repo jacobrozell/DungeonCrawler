@@ -60,8 +60,9 @@ final class GameEngineTests: XCTestCase {
         let first = e.price(.whetstone)
         e.buy(.whetstone)
         XCTAssertEqual(e.player.attack, atkBefore + 5)
-        // Geometric pricing: next copy costs 1.7× the first.
-        XCTAssertEqual(e.price(.whetstone), Int((Double(first) * 1.7).rounded()))
+        // Geometric pricing: next copy costs `shopPriceGrowth`× the first.
+        XCTAssertEqual(e.price(.whetstone),
+                       Int((Double(first) * Balance.shopPriceGrowth).rounded()))
     }
 
     func testBuyBlockedWhenBroke() {

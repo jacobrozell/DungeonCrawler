@@ -52,6 +52,27 @@ Candidate additions beyond the current build order, roughly by value:
 
 Newest first. Update this as you land work so whoever picks up next knows the state.
 
+- **2026-06-15 — Balancing pass: "feel like a real game". DONE (first pass).**
+  - **Passive mana regen** (`Balance.manaRegenPerTurn = 2`, applied in
+    `endRound`): the headline fix — mana never refilled before, so auto-battle
+    and long fights decayed into basic attacks and the whole kit went unused.
+    Now Magic/Heavy/Poison stay in rotation.
+  - **`Models/Balance.swift`**: every tuning knob in one documented place
+    (mana/crit, move costs & proc rates, enemy endless growth, shop price
+    growth, prestige divisor + node effects, offline cap/efficiency, tick rate).
+    `GameEngine`/`Enemy`/`CombatView` now read from it — no scattered magic
+    numbers (verified by grep).
+  - **Tuning toward targets** (documented in `Balance.swift`): fights ~3–8 turns;
+    campaign a ~10–20 min climb; endless growth eased to **1.12**/layer (was
+    1.15) so deep runs feel earned; shop growth eased to **1.6** (was 1.7) for
+    more buying; prestige `K=100`; offline 8h @ 50% base, extended by Patience.
+  - Tests updated for the new growth constants (now reference `Balance`).
+  - ⚠️ **Still not playtested** (no Xcode/sim here) — these are principled
+    first-pass numbers. The whole point of `Balance.swift` is that a real
+    playthrough → tweak constants in one file. Suggested method: time a campaign
+    clear, a single layer, and first-prestige; adjust `enemyEndlessGrowth`,
+    `prestigeShardDivisor`, and the per-level node effects to taste.
+
 - **2026-06-15 — Soul Shard skill tree. DONE.**
   - Prestige shards are no longer a flat auto-bonus — they're a **spendable
     currency** in a tree (`Models/SkillNode.swift`): Might (+5% atk/lvl),

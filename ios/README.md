@@ -88,6 +88,10 @@ Dungeon Divers is a **hybrid active + idle** game (design study in
   [`DungeonDivers/Audio/CREDITS.md`](DungeonDivers/Audio/CREDITS.md)).
 - **Deterministic, testable combat** via an injectable `RandomSource`; unit
   tests live in [`DungeonDiversTests/`](DungeonDivers/DungeonDiversTests).
+- **Mana regenerates** each turn, so the full ability kit stays usable in long
+  fights and on auto-battle.
+- **All balance in one file** — `Models/Balance.swift` holds every tuning knob
+  (combat, scaling, shop, prestige, offline, tick rate) with documented targets.
 
 Remaining plans + a per-step progress log for future contributors are in
 [`docs/future-work.md`](docs/future-work.md).

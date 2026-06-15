@@ -104,7 +104,7 @@ final class Enemy: Combatant {
         // eventually outscale any build (HP outpaces your damage, ATK outpaces
         // your defense). Ramps gently from ~1.15× at the first post-game layer.
         if postGame {
-            let m = pow(1.15, Double(postGameDepth))
+            let m = pow(Balance.enemyEndlessGrowth, Double(postGameDepth))
             hpStat = Int((Double(hpStat) * m).rounded())
             atkStat = Int((Double(atkStat) * m).rounded())
             defStat = Int((Double(defStat) * m).rounded())

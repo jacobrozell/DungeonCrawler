@@ -30,6 +30,7 @@
 		BF00000000000000000021 /* AscensionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000021 /* AscensionView.swift */; };
 		BF00000000000000000022 /* SkillNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000022 /* SkillNode.swift */; };
 		BF00000000000000000023 /* SkillTreeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000023 /* SkillTreeView.swift */; };
+		BF00000000000000000024 /* Balance.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000024 /* Balance.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -57,6 +58,7 @@
 		FR00000000000000000021 /* AscensionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscensionView.swift; sourceTree = "<group>"; };
 		FR00000000000000000022 /* SkillNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkillNode.swift; sourceTree = "<group>"; };
 		FR00000000000000000023 /* SkillTreeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkillTreeView.swift; sourceTree = "<group>"; };
+		FR00000000000000000024 /* Balance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Balance.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,6 +113,7 @@
 				FR00000000000000000018 /* Formatting.swift */,
 				FR00000000000000000019 /* GameSave.swift */,
 				FR00000000000000000022 /* SkillNode.swift */,
+				FR00000000000000000024 /* Balance.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -223,6 +226,7 @@
 				BF00000000000000000021 /* AscensionView.swift in Sources */,
 				BF00000000000000000022 /* SkillNode.swift in Sources */,
 				BF00000000000000000023 /* SkillTreeView.swift in Sources */,
+				BF00000000000000000024 /* Balance.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
