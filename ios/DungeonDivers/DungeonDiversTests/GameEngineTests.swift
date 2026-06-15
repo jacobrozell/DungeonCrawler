@@ -115,6 +115,24 @@ final class GameEngineTests: XCTestCase {
         XCTAssertEqual(e.enemyIndex, idx)
     }
 
+    func testSaveAndRestoreRoundTrip() {
+        SaveStore.clear()
+        defer { SaveStore.clear() }
+        let a = engine()
+        a.enemy.hp = 1
+        a.perform(.attack)              // gold gained, advanced to enemy 2
+        let gold = a.player.gold
+        let idx = a.enemyIndex
+        a.save()
+
+        // A fresh engine loads the save in its init.
+        let b = GameEngine(playerName: "Ignored", rng: ScriptedRandom(fallback: 9))
+        XCTAssertEqual(b.player.gold, gold)
+        XCTAssertEqual(b.enemyIndex, idx)
+        XCTAssertEqual(b.player.name, "Hero")
+        XCTAssertEqual(b.phase, .combat)
+    }
+
     func testMagicBlockedWithoutMana() {
         let e = engine()
         e.player.spendMana(e.player.mana)   // drain to 0

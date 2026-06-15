@@ -55,6 +55,21 @@ final class Player: Combatant {
         self.name = name.isEmpty ? "Diver" : name
     }
 
+    /// Rebuild a hero from a saved snapshot. Transient combat state (statuses)
+    /// is not restored.
+    convenience init(restoring s: GameSave) {
+        self.init(name: s.name)
+        maxHp = s.maxHp; hp = s.hp
+        maxAttack = s.maxAttack; attack = s.attack
+        maxDefense = s.maxDefense; defense = s.defense
+        luck = s.luck
+        level = s.level
+        gold = s.gold
+        maxMana = s.maxMana; mana = s.mana
+        potions = s.potions
+        ethers = s.ethers
+    }
+
     func restoreHp(_ amount: Int) {
         hp += amount
         if hp > maxHp { hp = maxHp }

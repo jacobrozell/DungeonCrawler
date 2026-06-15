@@ -3,6 +3,7 @@ import SwiftUI
 /// Routes between the game's phases.
 struct ContentView: View {
     @EnvironmentObject var engine: GameEngine
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         ZStack {
@@ -26,6 +27,14 @@ struct ContentView: View {
         .onAppear { SoundManager.shared.playMusic(Self.track(for: engine.phase)) }
         .onChange(of: engine.phase) { newPhase in
             SoundManager.shared.playMusic(Self.track(for: newPhase))
+        }
+        .onChange(of: scenePhase) { newScene in
+            if newScene == .active { engine.foregrounded() }
+            else { engine.backgrounded() }
+        }
+        .sheet(item: Binding(get: { engine.offlineReport },
+                             set: { engine.offlineReport = $0 })) { report in
+            OfflineReportView(report: report)
         }
     }
 

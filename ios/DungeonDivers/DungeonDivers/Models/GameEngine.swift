@@ -116,6 +116,12 @@ final class GameEngine: ObservableObject {
     @Published private(set) var best: BestRun
     @Published private(set) var setNewRecord = false
 
+    /// Set when offline auto-battle earned gold; the view shows a summary sheet.
+    @Published var offlineReport: OfflineReport?
+
+    /// When the app was last backgrounded (for warm-resume offline accrual).
+    private var backgroundedAt: Date?
+
     /// How many of each permanent upgrade have been bought (drives price scaling).
     @Published private(set) var purchaseCounts: [ShopItem: Int] = [:]
 
@@ -137,11 +143,13 @@ final class GameEngine: ObservableObject {
         self.enemy = Enemy(kind: Bestiary.fodder[0], scaleLevel: 0,
                            isBoss: false, isFinalBoss: false, postGameDepth: 0)
         self.best = BestRun.load()
+        loadIfAvailable()
     }
 
     // MARK: - Lifecycle
 
     func startGame(named name: String) {
+        SaveStore.clear()
         player = Player(name: name)
         layer = 1
         enemyIndex = 0
@@ -149,6 +157,8 @@ final class GameEngine: ObservableObject {
         clearedFinalBoss = false
         victoryShown = false
         setNewRecord = false
+        autoBattle = false
+        offlineReport = nil
         popup = nil
         purchaseCounts = [:]
         log = []
@@ -161,16 +171,17 @@ final class GameEngine: ObservableObject {
 
     // MARK: - Spawning (ports the num/layer bookkeeping from GameDriver)
 
-    private func spawnNextEnemy() {
-        enemyIndex += 1
+    private func spawnNextEnemy(advance: Bool = true) {
+        if advance {
+            enemyIndex += 1
+            if enemyIndex > 5 {
+                enemyIndex = 1
+                // A new group of fodder: the bestiary permanently strengthens.
+                scaleLevel += 1
+            }
+        }
         // 0 during layers 1–5; drives the endless exponential scaling after.
         let postGameDepth = max(0, layer - 5)
-
-        if enemyIndex > 5 {
-            enemyIndex = 1
-            // A new group of fodder: the bestiary permanently strengthens.
-            scaleLevel += 1
-        }
 
         let isBoss = enemyIndex == 5
         let isFinalBoss = isBoss && layer == 5
@@ -417,6 +428,7 @@ final class GameEngine: ObservableObject {
             Haptics.play(.error)
             SoundManager.shared.play(.playerDie)
             recordRun()
+            SaveStore.clear()        // run over — next launch starts fresh
             phase = .defeat
             return
         }
@@ -547,6 +559,108 @@ final class GameEngine: ObservableObject {
         append("You drink an ether and restore mana. 🔮", .reward)
         enemyRetaliates(bonusChance: 1)
         endRound()
+    }
+
+    // MARK: - Persistence & offline progress
+
+    /// App moved to the background: stamp the time and persist.
+    func backgrounded() {
+        backgroundedAt = Date()
+        save()
+    }
+
+    /// App returned to the foreground: accrue offline gold since backgrounding.
+    func foregrounded() {
+        if let t = backgroundedAt {
+            grantOffline(since: t)
+            backgroundedAt = nil
+        }
+    }
+
+    /// Persist the run, but only while it's live and resumable.
+    func save() {
+        switch phase {
+        case .combat, .levelUp, .shop:
+            SaveStore.write(snapshot())
+        default:
+            break
+        }
+    }
+
+    private func snapshot() -> GameSave {
+        var counts: [String: Int] = [:]
+        for (item, n) in purchaseCounts { counts[item.rawValue] = n }
+        let phaseStr: String
+        switch phase {
+        case .levelUp: phaseStr = "levelUp"
+        case .shop:    phaseStr = "shop"
+        default:       phaseStr = "combat"
+        }
+        return GameSave(
+            name: player.name, hp: player.hp, maxHp: player.maxHp,
+            attack: player.attack, maxAttack: player.maxAttack,
+            defense: player.defense, maxDefense: player.maxDefense,
+            luck: player.luck, level: player.level, gold: player.gold,
+            mana: player.mana, maxMana: player.maxMana,
+            potions: player.potions, ethers: player.ethers,
+            layer: layer, enemyIndex: enemyIndex, scaleLevel: scaleLevel,
+            clearedFinalBoss: clearedFinalBoss, victoryShown: victoryShown,
+            purchaseCounts: counts, phase: phaseStr, autoBattle: autoBattle,
+            lastSeen: Date())
+    }
+
+    private func loadIfAvailable() {
+        guard let save = SaveStore.read() else { return }
+        restore(from: save)
+    }
+
+    private func restore(from save: GameSave) {
+        player = Player(restoring: save)
+        layer = save.layer
+        enemyIndex = save.enemyIndex
+        scaleLevel = save.scaleLevel
+        clearedFinalBoss = save.clearedFinalBoss
+        victoryShown = save.victoryShown
+        autoBattle = save.autoBattle
+
+        var counts: [ShopItem: Int] = [:]
+        for (raw, n) in save.purchaseCounts {
+            if let item = ShopItem(rawValue: raw) { counts[item] = n }
+        }
+        purchaseCounts = counts
+
+        log = []
+        append("Welcome back, \(player.name)!", .system)
+        spawnNextEnemy(advance: false)   // rebuild a fresh enemy at the saved spot
+
+        switch save.phase {
+        case "levelUp": phase = .levelUp
+        case "shop":    phase = .shop
+        default:        phase = .combat
+        }
+
+        grantOffline(since: save.lastSeen)
+    }
+
+    /// Grant capped, reduced-rate gold for time spent away — only if the run was
+    /// idling (auto-battle on). Estimates income from current DPS vs. the foe.
+    private func grantOffline(since lastSeen: Date) {
+        guard autoBattle, phase == .combat else { return }
+        let elapsed = Date().timeIntervalSince(lastSeen)
+        guard elapsed > 60 else { return }            // ignore brief gaps
+
+        let cap: TimeInterval = 8 * 3600              // 8h cap
+        let effective = min(elapsed, cap)
+        let dps = Double(max(1, player.attack))
+        let killsPerSec = dps / Double(max(1, enemy.maxHp))
+        let goldPerSec = killsPerSec * Double(max(1, enemy.generateGold()))
+        let gold = Int(goldPerSec * effective * 0.5)  // 50% efficiency
+        guard gold > 0 else { return }
+
+        player.addGold(gold)
+        recordRun()
+        offlineReport = OfflineReport(gold: gold, duration: elapsed)
+        append("While away, auto-battle earned \(Formatting.short(gold)) gold. 🪙", .reward)
     }
 
     // MARK: - Records

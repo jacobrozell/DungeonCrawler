@@ -51,6 +51,31 @@ Candidate additions beyond the current build order, roughly by value:
 
 Newest first. Update this as you land work so whoever picks up next knows the state.
 
+- **2026-06-15 — Hybrid idle Part 2: offline progress + Codable save. DONE.**
+  - `Models/GameSave.swift`: `GameSave: Codable` snapshot (player stats + run
+    meta), `OfflineReport`, and `SaveStore` (single JSON slot in UserDefaults).
+  - `Player(restoring:)` convenience init; `Enemy`/statuses are not persisted —
+    a fresh enemy is rebuilt at the saved layer/index via
+    `spawnNextEnemy(advance: false)`.
+  - `GameEngine`: `save()` (only for resumable phases combat/levelUp/shop),
+    `snapshot()`, `loadIfAvailable()` (called from `init`), `restore(from:)`,
+    and `grantOffline(since:)` — capped (8h), 50% efficiency, **only when
+    auto-battle was on**. `startGame` clears the save; death clears it.
+    `backgrounded()`/`foregrounded()` handle warm-resume offline.
+  - `ContentView`: `scenePhase` → `backgrounded()`/`foregrounded()`; offline
+    summary shown via `.sheet` → new `OfflineReportView`.
+  - Registered `GameSave.swift` (0019) + `OfflineReportView.swift` (0020).
+    Test: save/restore round-trip in `GameEngineTests`.
+  - Behaviour note: a saved in-progress run **auto-resumes on launch** (skips
+    the title). New runs come from the title or game-over "New Run". A future
+    "Abandon run" button in Settings would let players bail to the title — not
+    added yet. Offline gold model is a rough first pass (`DPS/enemyHP × gold`);
+    tune in the balancing step.
+  - **Remaining hybrid parts:** (3) Prestige/ascension — `SoulShards`,
+    `Phase.ascension`, skill-tree screen, permanent multipliers, reset reusing
+    `startGame`; persist shards across runs in `BestRun`/a new meta save.
+    (4) Automation unlocks. (5) Balancing. See `idle-design.md` §5.
+
 - **2026-06-15 — Idle pivot = HYBRID (chosen). Part 1: auto-battle tick +
   big-number formatting. DONE.** (Plan: `idle-design.md`.)
   - `Models/Formatting.swift`: `Formatting.short(_:)` (K/M/B/T/aa…). Applied to
