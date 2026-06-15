@@ -176,6 +176,10 @@ struct CombatView: View {
                     statChip("burst.fill", engine.player.attack)
                     statChip("shield.lefthalf.filled", engine.player.defense)
                     statChip("dice.fill", engine.player.luck)
+                    if engine.damageReduction > 0 {
+                        Label("\(Int(engine.damageReduction * 100))%", systemImage: "shield.fill")
+                            .foregroundStyle(.purple)
+                    }
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)

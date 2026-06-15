@@ -6,6 +6,7 @@ enum SkillNode: String, CaseIterable, Identifiable {
     case might      // +attack
     case fortune    // +gold
     case vitality   // +max HP
+    case ward       // % damage reduction (the endless-survival lever)
     case patience   // +offline cap & efficiency
 
     var id: String { rawValue }
@@ -15,6 +16,7 @@ enum SkillNode: String, CaseIterable, Identifiable {
         case .might:    return "Might"
         case .fortune:  return "Fortune"
         case .vitality: return "Vitality"
+        case .ward:     return "Ward"
         case .patience: return "Patience"
         }
     }
@@ -24,6 +26,7 @@ enum SkillNode: String, CaseIterable, Identifiable {
         case .might:    return "⚔️"
         case .fortune:  return "💰"
         case .vitality: return "❤️"
+        case .ward:     return "🪬"
         case .patience: return "⏳"
         }
     }
@@ -33,6 +36,7 @@ enum SkillNode: String, CaseIterable, Identifiable {
         case .might:    return "+5% starting Attack per level."
         case .fortune:  return "+8% gold earned per level."
         case .vitality: return "+6% starting max HP per level."
+        case .ward:     return "+3% damage reduction per level (max 60%)."
         case .patience: return "+1h offline cap & +5% offline rate per level."
         }
     }
@@ -42,6 +46,7 @@ enum SkillNode: String, CaseIterable, Identifiable {
     private var baseCost: Int {
         switch self {
         case .patience: return 3
+        case .ward:     return 4   // powerful: survival scales the whole endless climb
         default:        return 1
         }
     }

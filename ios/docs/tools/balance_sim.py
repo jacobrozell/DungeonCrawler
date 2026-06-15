@@ -84,7 +84,8 @@ class Player:
                 elif stat=="hp": self.maxhp+=amt; self.hp=self.maxhp
                 elif stat=="luck": self.luck=max(1,self.luck-1)
 
-def simulate(atk_mult=1.0, hp_mult=1.0, gold_mult=1.0, max_layer=40, verbose=False):
+def simulate(atk_mult=1.0, hp_mult=1.0, gold_mult=1.0, dmg_reduction=0.0,
+             max_layer=40, verbose=False):
     p = Player(atk_mult, hp_mult, gold_mult)
     run_gold = 0; total_turns = 0
     layer = 1
@@ -94,15 +95,22 @@ def simulate(atk_mult=1.0, hp_mult=1.0, gold_mult=1.0, max_layer=40, verbose=Fal
             ehp, eatk, edef, eluck, boss = enemy_stats(layer, idx)
             p.mana = min(p.maxmana, p.mana + 5)  # small top-up between fights (dodge/level feel)
             turns = 0
-            while ehp > 0 and turns < 1000:
-                ehp -= p.avg_turn_damage(edef)
+            while ehp > 0 and turns < 2000:
+                # Matches autoMove(): heal when below 35% HP, else attack.
+                if p.hp < 0.35 * p.maxhp:
+                    p.hp = min(p.maxhp, p.hp + 10 * p.level)
+                else:
+                    ehp -= p.avg_turn_damage(edef)
                 turns += 1
                 if ehp <= 0: break
-                # enemy retaliates (expected)
-                p.hp -= hit_chance(eluck) * max(0, eatk - p.dfn)
+                # enemy retaliates (expected), reduced by Ward
+                p.hp -= hit_chance(eluck) * max(0, eatk - p.dfn) * (1 - dmg_reduction)
                 if p.hp <= 0:
                     return dict(died_layer=layer, died_enemy=idx, total_turns=total_turns+layer_turns+turns,
                                 level=p.level, gold_earned=run_gold, pending_shards=int(math.sqrt(run_gold/PRESTIGE_DIV)))
+            if turns >= 2000:   # can't out-damage — a soft DPS wall
+                return dict(stuck_layer=layer, died_enemy=idx, total_turns=total_turns+layer_turns+turns,
+                            level=p.level, gold_earned=run_gold, pending_shards=int(math.sqrt(run_gold/PRESTIGE_DIV)))
             layer_turns += turns
             gold = round((eatk * layer) * gold_mult)  # generateGold = atk*level(~layer)
             p.gold += gold; run_gold += gold
@@ -122,4 +130,12 @@ if __name__ == "__main__":
     print("\n=== Campaign-only (layers 1-5) ===")
     print(simulate(max_layer=5))
     print("\n=== With prestige: Might x5 (+25% atk), Fortune x5 (+40% gold) ===")
-    print(simulate(atk_mult=1.25, gold_mult=1.40, verbose=True))
+    print(simulate(atk_mult=1.25, gold_mult=1.40))
+
+    print("\n=== Ward node pushes the endless wall (the ladder fix) ===")
+    for ward in [0, 5, 10, 20]:                 # Ward levels → 0/15/30/60% DR (capped)
+        dr = min(0.60, 0.03 * ward)
+        r = simulate(atk_mult=1.25, hp_mult=1.30, gold_mult=1.40, dmg_reduction=dr)
+        reached = r.get("died_layer") or r.get("stuck_layer") or r.get("cleared")
+        why = "died" if "died_layer" in r else ("stuck" if "stuck_layer" in r else "cleared")
+        print(f"  Ward {ward:>2} ({int(dr*100):>2}% DR): {why} at layer {reached}")

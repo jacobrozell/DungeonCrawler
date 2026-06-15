@@ -52,6 +52,19 @@ Candidate additions beyond the current build order, roughly by value:
 
 Newest first. Update this as you land work so whoever picks up next knows the state.
 
+- **2026-06-15 — Ward prestige node (endless ladder fix). DONE.**
+  - New `SkillNode.ward`: +3%/level damage reduction, capped 60%
+    (`Balance.wardReductionPerLevel`/`maxDamageReduction`), baseCost 4 (premium).
+  - `GameEngine.damageReduction` + `mitigated(_:)` applied to direct enemy hits
+    (`enemyRetaliates`, dodge-fail). DoT (burn/poison) intentionally bypasses it.
+  - DR% shown in the combat player stats (purple shield) when > 0; node appears
+    in the existing Soul Tree sheet automatically.
+  - **Validated via `balance_sim.py`** (fixed the sim to heal mid-fight like
+    `autoMove`, which it wasn't): the wall now scales with Ward —
+    **0%→L11, 15%→L13, 30%→L15, 60%→L21**. That's the working "each prestige
+    climbs deeper" ladder we were missing. No new files (pbxproj unchanged).
+  - Test: `testWardDamageReductionScalesWithLevels`. Still not device-verified.
+
 - **2026-06-15 — Offline balance simulation + findings. DONE.**
   - Added `docs/tools/balance_sim.py` — a Python model of the combat/scaling/
     economy math (keep constants in sync with `Balance.swift` by hand). Lets us

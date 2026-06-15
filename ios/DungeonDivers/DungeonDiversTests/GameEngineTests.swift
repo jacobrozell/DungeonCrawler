@@ -183,6 +183,20 @@ final class GameEngineTests: XCTestCase {
         XCTAssertGreaterThan(e.player.attack, 25)
     }
 
+    func testWardDamageReductionScalesWithLevels() {
+        SaveStore.clear()
+        PrestigeStore.save(1000)
+        PrestigeStore.saveTree([:])
+        defer { SaveStore.clear(); PrestigeStore.save(0); PrestigeStore.saveTree([:]) }
+
+        let e = GameEngine(playerName: "Hero", rng: ScriptedRandom(fallback: 9))
+        XCTAssertEqual(e.damageReduction, 0.0, accuracy: 1e-9)
+        for _ in 0..<5 { e.upgradeNode(.ward) }
+        XCTAssertEqual(e.level(of: .ward), 5)
+        XCTAssertEqual(e.damageReduction, 0.15, accuracy: 1e-9) // 5 × 3%
+        XCTAssertLessThanOrEqual(e.damageReduction, Balance.maxDamageReduction)
+    }
+
     func testCannotUpgradeBeyondAffordableShards() {
         SaveStore.clear()
         PrestigeStore.save(0)

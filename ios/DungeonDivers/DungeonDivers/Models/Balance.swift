@@ -49,6 +49,8 @@ enum Balance {
     static let mightAttackPerLevel = 0.05      // +5% starting attack / level
     static let fortuneGoldPerLevel = 0.08      // +8% gold / level
     static let vitalityHpPerLevel = 0.06       // +6% starting max HP / level
+    static let wardReductionPerLevel = 0.03    // +3% damage reduction / level
+    static let maxDamageReduction = 0.60       // Ward caps here (keeps deaths possible)
     static let patienceHoursPerLevel = 1       // +1h offline cap / level
     static let patienceEfficiencyPerLevel = 0.05
     /// Automation (auto-resolve level-up/shop) unlocks at this many shards.

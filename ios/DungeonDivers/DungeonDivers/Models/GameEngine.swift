@@ -147,6 +147,15 @@ final class GameEngine: ObservableObject {
     var attackMultiplier: Double { 1 + Balance.mightAttackPerLevel * Double(level(.might)) }
     var goldMultiplier: Double { 1 + Balance.fortuneGoldPerLevel * Double(level(.fortune)) }
     var hpMultiplier: Double { 1 + Balance.vitalityHpPerLevel * Double(level(.vitality)) }
+    /// Ward: flat fraction of incoming direct damage prevented (capped).
+    var damageReduction: Double {
+        min(Balance.maxDamageReduction, Balance.wardReductionPerLevel * Double(level(.ward)))
+    }
+
+    /// Apply Ward to an incoming hit (floored at 0).
+    private func mitigated(_ base: Int) -> Int {
+        max(0, Int((Double(max(0, base)) * (1 - damageReduction)).rounded()))
+    }
     var offlineCap: TimeInterval {
         (Balance.baseOfflineHours + Double(Balance.patienceHoursPerLevel * level(.patience))) * 3600
     }
@@ -430,7 +439,7 @@ final class GameEngine: ObservableObject {
     private func resolveDodge() {
         append("You brace and watch for the opening…", .info)
         if Dice.checkHit(chance: enemy.luck + 3, rng: rng) {
-            let dmg = max(0, enemy.attack - player.defense)
+            let dmg = mitigated(enemy.attack - player.defense)
             player.takeHit(dmg)
             flashPlayer()
             showPopup("−\(dmg)", .damage, onPlayer: true)
@@ -467,9 +476,9 @@ final class GameEngine: ObservableObject {
             return
         }
         if Dice.checkHit(chance: enemy.luck + bonusChance, rng: rng) {
-            // Guard buff softens incoming hits while active.
+            // Guard buff softens incoming hits while active; Ward reduces the rest.
             let guardBonus = player.statuses.contains { $0.kind == .guardUp } ? 5 : 0
-            let dmg = max(0, enemy.attack - player.defense - guardBonus)
+            let dmg = mitigated(enemy.attack - player.defense - guardBonus)
             player.takeHit(dmg)
             flashPlayer()
             showPopup("−\(dmg)", .damage, onPlayer: true)

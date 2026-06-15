@@ -67,8 +67,9 @@ Dungeon Divers is a **hybrid active + idle** game (design study in
   were idling (auto-battle on) you collect capped gold earned while away.
 - **Prestige (Soul Shards)** — "Descend into the Abyss" ends the run for
   `floor(√(gold/100))` shards that **persist forever**. Spend them in the **Soul
-  Tree** (Might / Fortune / Vitality / Patience) for permanent boosts to attack,
-  gold, HP, and offline gains. Classic incremental ladder-climb.
+  Tree** (Might / Fortune / Vitality / **Ward** / Patience) for permanent boosts
+  to attack, gold, HP, damage-reduction, and offline gains. Ward's % mitigation
+  is what lets each descent climb meaningfully deeper. Classic ladder-climb.
 - **Automation** — after your first prestige, auto-battle also clears the
   level-up and shop automatically, so deep runs are fully hands-off.
 - **Big-number formatting** (K/M/B/T/aa…) across all gold/price displays.
