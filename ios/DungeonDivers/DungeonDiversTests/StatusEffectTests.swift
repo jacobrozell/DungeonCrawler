@@ -5,7 +5,7 @@ final class StatusEffectTests: XCTestCase {
 
     private func enemy() -> Enemy {
         Enemy(kind: Bestiary.fodder[0], scaleLevel: 0,
-              isBoss: false, isFinalBoss: false, postGame: false)
+              isBoss: false, isFinalBoss: false, postGameDepth: 0)
     }
 
     func testApplyStacksPoisonAndRefreshes() {

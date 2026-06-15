@@ -4,9 +4,9 @@ import XCTest
 final class EnemyTests: XCTestCase {
 
     private func make(scale: Int = 0, isBoss: Bool = false,
-                      isFinal: Bool = false, postGame: Bool = false) -> Enemy {
+                      isFinal: Bool = false, postGameDepth: Int = 0) -> Enemy {
         Enemy(kind: Bestiary.fodder[0], scaleLevel: scale,
-              isBoss: isBoss, isFinalBoss: isFinal, postGame: postGame)
+              isBoss: isBoss, isFinalBoss: isFinal, postGameDepth: postGameDepth)
     }
 
     func testBaseStatsMatchJavaOriginal() {
@@ -28,7 +28,16 @@ final class EnemyTests: XCTestCase {
 
     func testLuckTightensAtScale3AndPostGame() {
         XCTAssertEqual(make(scale: 3).luck, 3)   // bestiary "level 4"
-        XCTAssertEqual(make(postGame: true).luck, 1)
+        XCTAssertEqual(make(postGameDepth: 1).luck, 1)
+    }
+
+    func testEndlessScalingCompoundsAndOutgrows() {
+        let base = make(scale: 5)                       // a layer-6-ish fodder, pre-mult
+        let deep = make(scale: 5, postGameDepth: 1)     // same, first post-game layer
+        let deeper = make(scale: 5, postGameDepth: 12)  // far into endless
+        XCTAssertGreaterThan(deep.attack, base.attack)  // post-game multiplier kicks in
+        XCTAssertGreaterThan(deeper.attack, deep.attack * 4) // compounds hard
+        XCTAssertGreaterThan(deeper.hp, deep.hp * 4)
     }
 
     func testFinalBossFixedStatBlock() {

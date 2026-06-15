@@ -20,7 +20,7 @@ struct GameOverView: View {
                     .font(.system(size: 44, weight: .heavy, design: .serif))
                     .foregroundStyle(won ? Theme.gold : Theme.hpRed)
                 Text(won
-                     ? "You felled the Imperial Red Dragon and conquered Dungeon Divers!"
+                     ? "You felled the Imperial Red Dragon and conquered Dungeon Divers! Now dive endlessly — how deep can you go?"
                      : "The dungeon claims another diver.")
                     .font(.headline)
                     .multilineTextAlignment(.center)

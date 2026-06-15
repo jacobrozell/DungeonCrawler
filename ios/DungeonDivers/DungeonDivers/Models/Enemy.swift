@@ -60,11 +60,18 @@ final class Enemy: Combatant {
     let isBoss: Bool
 
     /// Base stats match the Java defaults: HP 50 / ATK 15 / DEF 5 / luck 5.
-    init(kind: EnemyKind, scaleLevel: Int, isBoss: Bool, isFinalBoss: Bool, postGame: Bool) {
+    ///
+    /// `postGameDepth` is `layer - 5` once the dragon is beaten (0 during the
+    /// faithful layers 1–5). In the endless "score chase" it compounds enemy
+    /// stats so that no linear/polynomial player build can keep up forever —
+    /// every run eventually ends. Pre-game balance is untouched.
+    init(kind: EnemyKind, scaleLevel: Int, isBoss: Bool, isFinalBoss: Bool, postGameDepth: Int) {
         self.name = kind.name
         self.sprite = kind.sprite
         self.tint = kind.tint
         self.isBoss = isBoss
+
+        let postGame = postGameDepth > 0
 
         // Cumulative scaling: every completed group of 5 added +15/+15/+5 to
         // the static maxes in the original. `scaleLevel` counts those bumps.
@@ -75,7 +82,7 @@ final class Enemy: Combatant {
         var lvl = 1 + scaleLevel
 
         // Luck improved (became 3, i.e. easier to hit you) once the bestiary
-        // reached level 4 in the original; post-game it was pinned harsher.
+        // reached level 4 in the original; post-game it's pinned harsher.
         if scaleLevel + 1 >= 4 { luckStat = 3 }
         if postGame { luckStat = 1 }
 
@@ -87,15 +94,20 @@ final class Enemy: Combatant {
             lvl = max(lvl, 5)
         } else if isBoss {
             // Bosses get a flat bump over the current fodder line.
-            if postGame {
-                hpStat += 30
-                atkStat += 20
-            } else {
-                hpStat += 15
-                atkStat += 10
-                defStat = max(0, defStat - 5)
-                luckStat += 1
-            }
+            hpStat += 15
+            atkStat += 10
+            defStat = max(0, defStat - 5)
+            if !postGame { luckStat += 1 }
+        }
+
+        // Endless escalation: a compounding multiplier guarantees enemies
+        // eventually outscale any build (HP outpaces your damage, ATK outpaces
+        // your defense). Ramps gently from ~1.15× at the first post-game layer.
+        if postGame {
+            let m = pow(1.15, Double(postGameDepth))
+            hpStat = Int((Double(hpStat) * m).rounded())
+            atkStat = Int((Double(atkStat) * m).rounded())
+            defStat = Int((Double(defStat) * m).rounded())
         }
 
         self.maxHp = hpStat

@@ -17,8 +17,10 @@ No third-party dependencies — pure SwiftUI.
 - Enter your name, then **Begin the Crawl**.
 - Each layer has **5 enemies**; the 5th is a **boss**.
 - Clear a boss to advance a layer and **level up** (pick a stat to boost).
-- Reach **Layer 5** and slay the **Imperial Red Dragon** to win — then keep
-  diving in endless mode.
+- Reach **Layer 5** and slay the **Imperial Red Dragon** to win.
+- Winning unlocks **endless mode**: a "how deep can you go?" score chase where
+  enemy stats **compound** each layer. No build keeps up forever — every run
+  eventually ends, and your deepest layer is the score.
 - You lose when your HP hits 0.
 
 ## Moves

@@ -46,6 +46,32 @@ Candidate additions beyond the current build order, roughly by value:
 
 Newest first. Update this as you land work so whoever picks up next knows the state.
 
+- **2026-06-15 — Step 6 (partial): endless rebalance — "score chase". DONE.**
+  - Problem: the shop let players snowball into trivial runs. Without the shop,
+    enemy HP (+15/layer) already outgrew player per-hit damage (~+5/layer), but
+    gold income is **quadratic** (`enemyATK × level`) while shop prices were
+    **linear**, so buying out-paced scaling and the game got easier forever.
+  - Fix (chosen direction: *endless score chase that always ends in death*):
+    - `Enemy` now takes `postGameDepth` (= `layer - 5`, 0 during layers 1–5) and
+      applies a **compounding ×1.15^depth** multiplier to HP/ATK/DEF in endless.
+      Pre-game (1–5) balance is untouched; the dragon stays fixed 150/100/0.
+      Exponential beats any linear/polynomial build → every run terminates.
+    - Shop permanent upgrades now priced **geometrically** (`base × 1.7^owned`)
+      so quadratic gold can't fully out-buy the curve.
+    - Victory/endless copy reframed as "how deep can you go?". Depth is already
+      the headline stat in `BestRun` / game-over.
+  - **Deliberately did NOT add literal stat soft-caps** (the 4th option mentioned
+    them): the exponential enemy curve already guarantees the run ends, and caps
+    risk muddying the faithful early game. Easy to add later if endless still
+    feels too long — clamp `Player.maxAttack/maxDefense` or add diminishing
+    level-up deltas above a threshold.
+  - Tuning knobs: enemy `pow(1.15, …)` in `Enemy.init`; shop `pow(1.7, …)` in
+    `GameEngine.price`. Lower the enemy base for longer runs, raise for shorter.
+  - Tests updated (`EnemyTests` signature + new `testEndlessScalingCompounds…`;
+    `GameEngineTests` geometric-price assertion; `StatusEffectTests` helper).
+  - Not playtested for the *feel* of the curve (no Xcode) — numbers are a
+    first pass; expect to tune `1.15`/`1.7` after a real run.
+
 - **2026-06-15 — Step 5: sound & music (code + wiring). DONE (assets pending).**
   - `Models/SoundManager.swift`: `SFX`/`MusicTrack` enums + a singleton that
     plays via `AVFoundation` **iff** the file is in the bundle, else silent

@@ -130,7 +130,7 @@ final class GameEngine: ObservableObject {
         let p = Player(name: playerName)
         self.player = p
         self.enemy = Enemy(kind: Bestiary.fodder[0], scaleLevel: 0,
-                           isBoss: false, isFinalBoss: false, postGame: false)
+                           isBoss: false, isFinalBoss: false, postGameDepth: 0)
         self.best = BestRun.load()
     }
 
@@ -158,7 +158,8 @@ final class GameEngine: ObservableObject {
 
     private func spawnNextEnemy() {
         enemyIndex += 1
-        let postGame = layer > 5
+        // 0 during layers 1–5; drives the endless exponential scaling after.
+        let postGameDepth = max(0, layer - 5)
 
         if enemyIndex > 5 {
             enemyIndex = 1
@@ -179,7 +180,7 @@ final class GameEngine: ObservableObject {
         }
 
         enemy = Enemy(kind: kind, scaleLevel: scaleLevel,
-                      isBoss: isBoss, isFinalBoss: isFinalBoss, postGame: postGame)
+                      isBoss: isBoss, isFinalBoss: isFinalBoss, postGameDepth: postGameDepth)
         spawnCounter += 1
 
         append("— Layer \(layer): Enemy \(enemyIndex) of 5 —", .system)
@@ -419,7 +420,8 @@ final class GameEngine: ObservableObject {
         if wasFinal {
             clearedFinalBoss = true
             append("You felled the Imperial Red Dragon! 🐉", .reward)
-            append("★ Dungeon Divers complete! ★ Endless mode unlocked.", .system)
+            append("★ Dungeon Divers complete! ★ Endless mode unlocked — "
+                   + "enemies now scale relentlessly. How deep can you go?", .system)
             SoundManager.shared.play(.victory)
         }
 
@@ -454,11 +456,13 @@ final class GameEngine: ObservableObject {
 
     // MARK: - Shop
 
-    /// Current price for an item (permanent upgrades inflate per copy owned).
+    /// Current price for an item. Consumables are flat; permanent upgrades
+    /// inflate *geometrically* per copy owned (1.7× each) so gold — which grows
+    /// quadratically with depth — can't fully out-buy the endless scaling.
     func price(_ item: ShopItem) -> Int {
         guard item.isPermanent else { return item.basePrice }
         let owned = purchaseCounts[item, default: 0]
-        return item.basePrice + item.basePrice * owned
+        return Int((Double(item.basePrice) * pow(1.7, Double(owned))).rounded())
     }
 
     func canAfford(_ item: ShopItem) -> Bool { player.gold >= price(item) }
