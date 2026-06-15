@@ -14,10 +14,11 @@ directly:
 
 ## Ideas backlog (unscoped — pick and spec before building)
 
-> **Idle/incremental direction:** a dedicated, research-grounded study lives in
-> [`idle-design.md`](idle-design.md) — idle-game patterns (generators, prestige,
-> offline progress, automation) mapped onto Dungeon Divers, with three adoption
-> levels and a build order. Awaiting a pick on how far to pivot.
+> **Idle/incremental direction (HYBRID — chosen & built):** study in
+> [`idle-design.md`](idle-design.md). Implemented: auto-battle tick, big-number
+> formatting, offline progress, Codable save/resume, prestige/ascension (Soul
+> Shards), and automation. Remaining: a balancing pass and (optional) a shard
+> skill tree / auto-descend toggle. See the progress log below.
 
 Candidate additions beyond the current build order, roughly by value:
 
@@ -50,6 +51,22 @@ Candidate additions beyond the current build order, roughly by value:
 ## Progress log (for the next agent)
 
 Newest first. Update this as you land work so whoever picks up next knows the state.
+
+- **2026-06-15 — Hybrid idle Part 4: automation. DONE.**
+  - `automationUnlocked` (= `totalShards >= 1`, i.e. after the first prestige):
+    `tick()` now also auto-resolves `.levelUp` (round-robin stat picks) and
+    `.shop` (`autoShop` buys each affordable permanent, then dives), so a
+    prestiged run is fully hands-off. Pre-prestige runs still stop for choices.
+  - Auto-battle toggle label shows "(full auto)" once unlocked. Tests:
+    automation clears level-up when unlocked / stays locked before prestige.
+  - Did **not** add auto-descend (auto-prestige) — it's jarring without a
+    threshold UI; left as a future toggle. No auto-buy of consumables (perms
+    only). The shard "skill tree" (spend shards on discrete upgrades incl.
+    finer automation toggles) is still the natural next expansion.
+  - **Remaining:** (5) Balancing pass only — needs real playtesting (no Xcode
+    here). Knobs: prestige `K=100` & `+2%/shard` (`GameEngine`), enemy
+    `pow(1.15,…)` (`Enemy`), shop `pow(1.7,…)` (`GameEngine.price`), offline
+    rate/cap (`grantOffline`), tick rate (1 Hz in `CombatView`).
 
 - **2026-06-15 — Hybrid idle Part 3: prestige / ascension. DONE.**
   - Soul Shards persist across runs (`PrestigeStore` in UserDefaults). Each

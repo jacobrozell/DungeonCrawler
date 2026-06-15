@@ -56,8 +56,7 @@ struct CombatView: View {
     /// Auto-battle on/off control.
     private var autoToggle: some View {
         Button { engine.toggleAuto() } label: {
-            Label(engine.autoBattle ? "Auto-Battle: On" : "Auto-Battle: Off",
-                  systemImage: engine.autoBattle ? "play.circle.fill" : "pause.circle")
+            Label(autoLabel, systemImage: engine.autoBattle ? "play.circle.fill" : "pause.circle")
                 .font(.subheadline.bold())
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 9)
@@ -226,6 +225,11 @@ struct CombatView: View {
             .clipShape(RoundedRectangle(cornerRadius: 10))
         }
         .buttonStyle(PressableButtonStyle())
+    }
+
+    private var autoLabel: String {
+        guard engine.autoBattle else { return "Auto-Battle: Off" }
+        return engine.automationUnlocked ? "Auto-Battle: On (full auto)" : "Auto-Battle: On"
     }
 
     private var moveButtons: some View {

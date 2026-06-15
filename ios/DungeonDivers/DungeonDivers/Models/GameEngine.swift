@@ -223,11 +223,43 @@ final class GameEngine: ObservableObject {
 
     func toggleAuto() { autoBattle.toggle() }
 
-    /// Driven by the view's timeline (~1 Hz). Auto-plays one combat action while
-    /// auto-battle is on and we're in a fight; a no-op otherwise.
+    /// Automation (auto-resolve level-up & shop so idle doesn't stall) unlocks
+    /// after the first prestige — early runs stay hands-on.
+    var automationUnlocked: Bool { totalShards >= 1 }
+
+    /// Driven by the view's timeline (~1 Hz). With auto-battle on: plays a combat
+    /// action, and — once automation is unlocked — also clears the between-layer
+    /// level-up/shop so the run keeps diving unattended.
     func tick() {
-        guard autoBattle, phase == .combat else { return }
-        perform(autoMove())
+        guard autoBattle else { return }
+        switch phase {
+        case .combat:
+            perform(autoMove())
+        case .levelUp where automationUnlocked:
+            chooseUpgrade(autoUpgrade())
+        case .shop where automationUnlocked:
+            autoShop()
+        default:
+            break
+        }
+    }
+
+    /// Round-robin stat picks keep the build balanced under automation.
+    private func autoUpgrade() -> Player.Upgrade {
+        switch player.level % 3 {
+        case 0:  return .health
+        case 1:  return .attack
+        default: return .defense
+        }
+    }
+
+    /// Buy each affordable permanent upgrade once, then dive on.
+    private func autoShop() {
+        for item in [ShopItem.whetstone, .towerShield, .heartVial, .luckyCoin]
+        where canAfford(item) {
+            buy(item)
+        }
+        leaveShop()
     }
 
     /// Simple auto-battle heuristic: heal when hurt, otherwise spend mana on the

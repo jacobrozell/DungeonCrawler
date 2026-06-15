@@ -68,6 +68,8 @@ Dungeon Divers is a **hybrid active + idle** game (design study in
 - **Prestige (Soul Shards)** — "Descend into the Abyss" ends the run for
   `floor(√(gold/100))` shards that **persist forever**; each grants +2% starting
   power and gold. Classic incremental ladder-climb.
+- **Automation** — after your first prestige, auto-battle also clears the
+  level-up and shop automatically, so deep runs are fully hands-off.
 - **Big-number formatting** (K/M/B/T/aa…) across all gold/price displays.
 
 ## Systems & progression

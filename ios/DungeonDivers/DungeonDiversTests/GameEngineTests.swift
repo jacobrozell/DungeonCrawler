@@ -166,6 +166,33 @@ final class GameEngineTests: XCTestCase {
         }
     }
 
+    func testAutomationClearsLevelUpWhenUnlocked() {
+        SaveStore.clear()
+        PrestigeStore.save(5)            // automation unlocked (>= 1 shard)
+        defer { SaveStore.clear(); PrestigeStore.save(0) }
+
+        let e = GameEngine(playerName: "Hero", rng: ScriptedRandom(fallback: 9))
+        e.startGame(named: "Hero")
+        e.autoBattle = true
+        for _ in 1...5 { e.enemy.hp = 1; e.perform(.attack) }  // 5th kill → levelUp
+        XCTAssertEqual(e.phase, .levelUp)
+        e.tick()                          // automation auto-picks the upgrade
+        XCTAssertEqual(e.player.level, 2)
+        XCTAssertNotEqual(e.phase, .levelUp)
+    }
+
+    func testAutomationLockedBeforeFirstPrestige() {
+        SaveStore.clear()
+        PrestigeStore.save(0)
+        let e = engine()                  // 0 shards
+        XCTAssertFalse(e.automationUnlocked)
+        for _ in 1...5 { e.enemy.hp = 1; e.perform(.attack) }
+        XCTAssertEqual(e.phase, .levelUp)
+        e.autoBattle = true
+        e.tick()                          // must NOT auto-advance
+        XCTAssertEqual(e.phase, .levelUp)
+    }
+
     func testMagicBlockedWithoutMana() {
         let e = engine()
         e.player.spendMana(e.player.mana)   // drain to 0
