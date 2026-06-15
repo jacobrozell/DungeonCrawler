@@ -379,6 +379,19 @@ final class GameEngine: ObservableObject {
     // MARK: - Death handling
 
     private func resolveDeaths() {
+        // Player death takes precedence — if a lethal end-of-round DoT drops both
+        // the hero and the enemy in the same tick, it's still a defeat (rather
+        // than silently advancing at 0 HP).
+        if !player.isAlive {
+            append("You died on Layer \(layer)… 💀", .danger)
+            append("Final gold: \(player.gold). Reached level \(player.level).", .info)
+            Haptics.play(.error)
+            SoundManager.shared.play(.playerDie)
+            recordRun()
+            phase = .defeat
+            return
+        }
+
         if !enemy.isAlive {
             let gold = enemy.generateGold()
             player.addGold(gold)
@@ -393,16 +406,6 @@ final class GameEngine: ObservableObject {
             } else {
                 spawnNextEnemy()
             }
-            return
-        }
-
-        if !player.isAlive {
-            append("You died on Layer \(layer)… 💀", .danger)
-            append("Final gold: \(player.gold). Reached level \(player.level).", .info)
-            Haptics.play(.error)
-            SoundManager.shared.play(.playerDie)
-            recordRun()
-            phase = .defeat
         }
     }
 
