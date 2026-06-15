@@ -5,9 +5,10 @@ import Foundation
 /// Ported from the original Java `checkHit` in `Player.java` / `Enemy.java`:
 /// a d10 is rolled (0...9) and the attack lands when the roll is at least
 /// the supplied `chance`. Higher `chance` therefore means a *harder* hit.
+/// The roll comes from an injected `RandomSource` so it's testable.
 enum Dice {
-    static func checkHit(chance: Int) -> Bool {
-        Int.random(in: 0..<10) >= chance
+    static func checkHit(chance: Int, rng: RandomSource) -> Bool {
+        rng.roll(0..<10) >= chance
     }
 }
 

@@ -12,6 +12,49 @@ directly:
 
 ---
 
+## Progress log (for the next agent)
+
+Newest first. Update this as you land work so whoever picks up next knows the state.
+
+- **2026-06-15 — Step 1: injectable RNG + combat-math tests. DONE.**
+  - Added `Models/RandomSource.swift`: `RandomSource` protocol with `roll(_:)`,
+    plus `chance(_:)` / `element(_:)` helpers, `SystemRandom` (production), and
+    `SeededRandom` (SplitMix64, deterministic).
+  - `Dice.checkHit` now takes `rng:`. `GameEngine` owns
+    `private let rng: RandomSource` (init param defaults to `SystemRandom()`);
+    all probability — `checkHit`, `rollCrit`, and enemy/boss selection
+    (`rng.element`) — routes through it. No `Int.random`/`randomElement()` left
+    in game logic.
+  - Tests written under `DungeonDivers/DungeonDiversTests/` (`TestSupport.swift`
+    with `ScriptedRandom`, plus `Dice`/`Player`/`Enemy`/`GameEngine` tests).
+  - ⚠️ **Test target not yet wired into the project** — see "Testing" below.
+    The test files exist and compile against the app module; they just need a
+    target. Do this before relying on `xcodebuild test`.
+  - Not build-verified (no Xcode in the authoring environment).
+
+**Build order status:** [x] 1 RNG+tests · [ ] 2 status effects ·
+[ ] 3 poison move/boss debuffs · [ ] 4 gold shop · [ ] 5 sound · [ ] 6 balancing.
+
+### Testing — wiring the unit-test target
+
+The pbxproj is hand-written, so the test target was intentionally **not**
+hand-edited (a bad UUID makes the project unopenable, and there's no Xcode here
+to verify). To enable the tests:
+
+1. In Xcode: **File ▸ New ▸ Target… ▸ Unit Testing Bundle**, name it
+   `DungeonDiversTests`, host application `DungeonDivers`.
+2. Delete the auto-created stub file; **add the existing files** in
+   `DungeonDiversTests/` to the new target.
+3. Ensure the app target builds for testing (`@testable import DungeonDivers`
+   needs `ENABLE_TESTABILITY = YES` in Debug — already set).
+4. Run with ⌘U or `xcodebuild test -scheme DungeonDivers -destination
+   'platform=iOS Simulator,name=iPhone 15'`.
+
+(If a future agent does have a working Xcode/CLI, wiring it directly into the
+pbxproj is fine — just verify the project still opens.)
+
+---
+
 ## 1. Gold Shop
 
 ### Goal

@@ -115,7 +115,11 @@ final class GameEngine: ObservableObject {
     private var scaleLevel = 0                       // cumulative enemy strengthening
     private var victoryShown = false                 // celebrate the dragon only once
 
-    init(playerName: String = "Diver") {
+    /// Injectable randomness — `SystemRandom` in the app, `SeededRandom`/stub in tests.
+    private let rng: RandomSource
+
+    init(playerName: String = "Diver", rng: RandomSource = SystemRandom()) {
+        self.rng = rng
         let p = Player(name: playerName)
         self.player = p
         self.enemy = Enemy(kind: Bestiary.fodder[0], scaleLevel: 0,
@@ -161,9 +165,9 @@ final class GameEngine: ObservableObject {
         if isFinalBoss {
             kind = Bestiary.finalBoss
         } else if isBoss {
-            kind = Bestiary.bosses.randomElement()!
+            kind = rng.element(Bestiary.bosses)!
         } else {
-            kind = Bestiary.fodder.randomElement()!
+            kind = rng.element(Bestiary.fodder)!
         }
 
         enemy = Enemy(kind: kind, scaleLevel: scaleLevel,
@@ -199,7 +203,7 @@ final class GameEngine: ObservableObject {
     /// enemy dies first — matching the original where a lethal hit `break`s out
     /// before the enemy can swing back.
     private func resolveAttack(multiplier: Double, label: String) {
-        if Dice.checkHit(chance: player.luck) {
+        if Dice.checkHit(chance: player.luck, rng: rng) {
             let crit = rollCrit()
             let critMult = crit ? 2.0 : 1.0
             let raw = Int(Double(player.attack) * multiplier * critMult) - enemy.defense
@@ -237,7 +241,7 @@ final class GameEngine: ObservableObject {
     /// dodge you recover a little HP and some mana.
     private func resolveDodge() {
         append("You brace and watch for the opening…", .info)
-        if Dice.checkHit(chance: enemy.luck + 3) {
+        if Dice.checkHit(chance: enemy.luck + 3, rng: rng) {
             let dmg = max(0, enemy.attack - player.defense)
             player.takeHit(dmg)
             flashPlayer()
@@ -269,7 +273,7 @@ final class GameEngine: ObservableObject {
     /// Enemy's swing back, ported from the shared `e1.checkHit` blocks.
     private func enemyRetaliates(bonusChance: Int) {
         guard enemy.isAlive else { return }
-        if Dice.checkHit(chance: enemy.luck + bonusChance) {
+        if Dice.checkHit(chance: enemy.luck + bonusChance, rng: rng) {
             let dmg = max(0, enemy.attack - player.defense)
             player.takeHit(dmg)
             flashPlayer()
@@ -284,8 +288,7 @@ final class GameEngine: ObservableObject {
     /// Crit chance leans on luck: in this game a *lower* luck value lands hits
     /// more often, so it also crits more. Player luck 3 → ~21%.
     private func rollCrit() -> Bool {
-        let chance = max(5, (10 - player.luck) * 3)
-        return Int.random(in: 0..<100) < chance
+        rng.chance(max(5, (10 - player.luck) * 3))
     }
 
     // MARK: - Death handling
