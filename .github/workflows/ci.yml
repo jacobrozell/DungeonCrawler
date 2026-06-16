@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  balance-check:
+    name: Balance model check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run balance pacing checks
+        run: python3 ios/docs/tools/balance_sim.py --check
+
+  build:
+    name: Build iOS app
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show Xcode version
+        run: xcodebuild -version
+      - name: Build (compile check, no signing)
+        run: |
+          xcodebuild build \
+            -project ios/DungeonDivers/DungeonDivers.xcodeproj \
+            -scheme DungeonDivers \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO
+      # Once the DungeonDiversTests target is wired into the project (see
+      # ios/docs/future-work.md), switch the step above to `xcodebuild test`
+      # with a concrete simulator destination to also run the unit tests.

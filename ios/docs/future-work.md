@@ -52,6 +52,24 @@ Candidate additions beyond the current build order, roughly by value:
 
 Newest first. Update this as you land work so whoever picks up next knows the state.
 
+- **2026-06-16 — Regression guards + CI for the balance findings. DONE.**
+  - `balance_sim.py --check`: self-checking mode that asserts the pacing findings
+    (campaign clearable, every run ends, Ward extends the wall) and exits non-zero
+    on regression. **Runs green here** — Ward wall progression 0/10/20 → L11/15/21.
+  - `DungeonDiversTests/BalanceTests.swift`: drives the **real `GameEngine`**
+    (seeded RNG, auto-battle) and asserts: every run terminates in defeat;
+    strong prestige clears the campaign; Ward (summed across seeds) deepens runs.
+    Enemy *stats* depend only on layer/index/scale (not the random kind), so these
+    are reproducible. Runs once the test target is wired (still manual — see below).
+  - **CI** (`.github/workflows/ci.yml`): ubuntu job runs the balance check on
+    every push (no Xcode needed); macOS job runs `xcodebuild build` (compile
+    check, no signing) — this is the first automated verification of the Swift
+    that can't be compiled in the authoring env. Added a shared scheme
+    (`…/xcshareddata/xcschemes/DungeonDivers.xcscheme`) so `-scheme DungeonDivers`
+    resolves. Switch the build step to `xcodebuild test` once the test target is
+    wired. **Expect the first macOS run to surface any latent compile fixes** —
+    that's the point; iterate from CI output.
+
 - **2026-06-15 — Ward prestige node (endless ladder fix). DONE.**
   - New `SkillNode.ward`: +3%/level damage reduction, capped 60%
     (`Balance.wardReductionPerLevel`/`maxDamageReduction`), baseCost 4 (premium).

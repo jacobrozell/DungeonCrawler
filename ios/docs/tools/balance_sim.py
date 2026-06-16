@@ -123,7 +123,38 @@ def simulate(atk_mult=1.0, hp_mult=1.0, gold_mult=1.0, dmg_reduction=0.0,
     return dict(cleared=max_layer, total_turns=total_turns, level=p.level,
                 gold_earned=run_gold, pending_shards=int(math.sqrt(run_gold/PRESTIGE_DIV)))
 
+def check():
+    """Assert the key pacing findings; return a list of failures (empty = OK)."""
+    fails = []
+    camp = simulate(max_layer=5)
+    if camp.get("cleared") != 5:
+        fails.append(f"campaign (L1-5) not clearable: {camp}")
+    base = simulate()
+    if "died_layer" not in base and "stuck_layer" not in base:
+        fails.append(f"a no-prestige run never ends: {base}")
+    depths = []
+    for ward in [0, 10, 20]:
+        dr = min(0.60, 0.03 * ward)
+        r = simulate(atk_mult=1.25, hp_mult=1.30, gold_mult=1.40, dmg_reduction=dr)
+        depths.append(r.get("died_layer") or r.get("stuck_layer") or r.get("cleared"))
+    if not (depths[0] < depths[-1]):
+        fails.append(f"Ward did not extend the wall: {depths}")
+    return fails, depths
+
+
 if __name__ == "__main__":
+    import sys
+    if "--check" in sys.argv:
+        fails, depths = check()
+        print(f"Ward wall progression (0/10/20 levels): {depths}")
+        if fails:
+            print("BALANCE CHECK FAILED:")
+            for f in fails:
+                print("  -", f)
+            sys.exit(1)
+        print("BALANCE CHECK PASSED")
+        sys.exit(0)
+
     print("=== Run 1 (no prestige) ===")
     r = simulate(verbose=True)
     print(r)
