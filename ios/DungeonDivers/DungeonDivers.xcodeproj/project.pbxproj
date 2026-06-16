@@ -1,0 +1,355 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		BF00000000000000000001 /* DungeonDiversApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000001 /* DungeonDiversApp.swift */; };
+		BF00000000000000000002 /* Combatant.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000002 /* Combatant.swift */; };
+		BF00000000000000000003 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000003 /* Player.swift */; };
+		BF00000000000000000004 /* Enemy.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000004 /* Enemy.swift */; };
+		BF00000000000000000005 /* GameEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000005 /* GameEngine.swift */; };
+		BF00000000000000000006 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000006 /* Theme.swift */; };
+		BF00000000000000000007 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000007 /* ContentView.swift */; };
+		BF00000000000000000008 /* CombatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000008 /* CombatView.swift */; };
+		BF00000000000000000009 /* LevelUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000009 /* LevelUpView.swift */; };
+		BF00000000000000000010 /* GameOverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000010 /* GameOverView.swift */; };
+		BF00000000000000000011 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000011 /* Assets.xcassets */; };
+		BF00000000000000000012 /* RandomSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000012 /* RandomSource.swift */; };
+		BF00000000000000000013 /* StatusEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000013 /* StatusEffect.swift */; };
+		BF00000000000000000014 /* ShopItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000014 /* ShopItem.swift */; };
+		BF00000000000000000015 /* ShopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000015 /* ShopView.swift */; };
+		BF00000000000000000016 /* SoundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000016 /* SoundManager.swift */; };
+		BF00000000000000000017 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000017 /* SettingsView.swift */; };
+		BF00000000000000000018 /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000018 /* Formatting.swift */; };
+		BF00000000000000000019 /* GameSave.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000019 /* GameSave.swift */; };
+		BF00000000000000000020 /* OfflineReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000020 /* OfflineReportView.swift */; };
+		BF00000000000000000021 /* AscensionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000021 /* AscensionView.swift */; };
+		BF00000000000000000022 /* SkillNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000022 /* SkillNode.swift */; };
+		BF00000000000000000023 /* SkillTreeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000023 /* SkillTreeView.swift */; };
+		BF00000000000000000024 /* Balance.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR00000000000000000024 /* Balance.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		FR00000000000000000000 /* DungeonDivers.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DungeonDivers.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FR00000000000000000001 /* DungeonDiversApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DungeonDiversApp.swift; sourceTree = "<group>"; };
+		FR00000000000000000002 /* Combatant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Combatant.swift; sourceTree = "<group>"; };
+		FR00000000000000000003 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
+		FR00000000000000000004 /* Enemy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Enemy.swift; sourceTree = "<group>"; };
+		FR00000000000000000005 /* GameEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameEngine.swift; sourceTree = "<group>"; };
+		FR00000000000000000006 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		FR00000000000000000007 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		FR00000000000000000008 /* CombatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CombatView.swift; sourceTree = "<group>"; };
+		FR00000000000000000009 /* LevelUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelUpView.swift; sourceTree = "<group>"; };
+		FR00000000000000000010 /* GameOverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverView.swift; sourceTree = "<group>"; };
+		FR00000000000000000011 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		FR00000000000000000012 /* RandomSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RandomSource.swift; sourceTree = "<group>"; };
+		FR00000000000000000013 /* StatusEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusEffect.swift; sourceTree = "<group>"; };
+		FR00000000000000000014 /* ShopItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopItem.swift; sourceTree = "<group>"; };
+		FR00000000000000000015 /* ShopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopView.swift; sourceTree = "<group>"; };
+		FR00000000000000000016 /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
+		FR00000000000000000017 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		FR00000000000000000018 /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
+		FR00000000000000000019 /* GameSave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSave.swift; sourceTree = "<group>"; };
+		FR00000000000000000020 /* OfflineReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineReportView.swift; sourceTree = "<group>"; };
+		FR00000000000000000021 /* AscensionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AscensionView.swift; sourceTree = "<group>"; };
+		FR00000000000000000022 /* SkillNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkillNode.swift; sourceTree = "<group>"; };
+		FR00000000000000000023 /* SkillTreeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkillTreeView.swift; sourceTree = "<group>"; };
+		FR00000000000000000024 /* Balance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Balance.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FB00000000000000000000 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		GR00000000000000000000 = {
+			isa = PBXGroup;
+			children = (
+				GR00000000000000000001 /* DungeonDivers */,
+				GR00000000000000000002 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		GR00000000000000000001 /* DungeonDivers */ = {
+			isa = PBXGroup;
+			children = (
+				FR00000000000000000001 /* DungeonDiversApp.swift */,
+				GR00000000000000000003 /* Models */,
+				GR00000000000000000004 /* Views */,
+				FR00000000000000000011 /* Assets.xcassets */,
+			);
+			path = DungeonDivers;
+			sourceTree = "<group>";
+		};
+		GR00000000000000000002 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FR00000000000000000000 /* DungeonDivers.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		GR00000000000000000003 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				FR00000000000000000002 /* Combatant.swift */,
+				FR00000000000000000003 /* Player.swift */,
+				FR00000000000000000004 /* Enemy.swift */,
+				FR00000000000000000005 /* GameEngine.swift */,
+				FR00000000000000000012 /* RandomSource.swift */,
+				FR00000000000000000013 /* StatusEffect.swift */,
+				FR00000000000000000014 /* ShopItem.swift */,
+				FR00000000000000000016 /* SoundManager.swift */,
+				FR00000000000000000018 /* Formatting.swift */,
+				FR00000000000000000019 /* GameSave.swift */,
+				FR00000000000000000022 /* SkillNode.swift */,
+				FR00000000000000000024 /* Balance.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		GR00000000000000000004 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				FR00000000000000000006 /* Theme.swift */,
+				FR00000000000000000007 /* ContentView.swift */,
+				FR00000000000000000008 /* CombatView.swift */,
+				FR00000000000000000009 /* LevelUpView.swift */,
+				FR00000000000000000010 /* GameOverView.swift */,
+				FR00000000000000000015 /* ShopView.swift */,
+				FR00000000000000000017 /* SettingsView.swift */,
+				FR00000000000000000020 /* OfflineReportView.swift */,
+				FR00000000000000000021 /* AscensionView.swift */,
+				FR00000000000000000023 /* SkillTreeView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		NT00000000000000000000 /* DungeonDivers */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CL00000000000000000002 /* Build configuration list for PBXNativeTarget "DungeonDivers" */;
+			buildPhases = (
+				SR00000000000000000000 /* Sources */,
+				FB00000000000000000000 /* Frameworks */,
+				RS00000000000000000000 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DungeonDivers;
+			productName = DungeonDivers;
+			productReference = FR00000000000000000000 /* DungeonDivers.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		PJ00000000000000000000 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					NT00000000000000000000 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = CL00000000000000000001 /* Build configuration list for PBXProject "DungeonDivers" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = GR00000000000000000000;
+			productRefGroup = GR00000000000000000002 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				NT00000000000000000000 /* DungeonDivers */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		RS00000000000000000000 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF00000000000000000011 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		SR00000000000000000000 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF00000000000000000001 /* DungeonDiversApp.swift in Sources */,
+				BF00000000000000000002 /* Combatant.swift in Sources */,
+				BF00000000000000000003 /* Player.swift in Sources */,
+				BF00000000000000000004 /* Enemy.swift in Sources */,
+				BF00000000000000000005 /* GameEngine.swift in Sources */,
+				BF00000000000000000006 /* Theme.swift in Sources */,
+				BF00000000000000000007 /* ContentView.swift in Sources */,
+				BF00000000000000000008 /* CombatView.swift in Sources */,
+				BF00000000000000000009 /* LevelUpView.swift in Sources */,
+				BF00000000000000000010 /* GameOverView.swift in Sources */,
+				BF00000000000000000012 /* RandomSource.swift in Sources */,
+				BF00000000000000000013 /* StatusEffect.swift in Sources */,
+				BF00000000000000000014 /* ShopItem.swift in Sources */,
+				BF00000000000000000015 /* ShopView.swift in Sources */,
+				BF00000000000000000016 /* SoundManager.swift in Sources */,
+				BF00000000000000000017 /* SettingsView.swift in Sources */,
+				BF00000000000000000018 /* Formatting.swift in Sources */,
+				BF00000000000000000019 /* GameSave.swift in Sources */,
+				BF00000000000000000020 /* OfflineReportView.swift in Sources */,
+				BF00000000000000000021 /* AscensionView.swift in Sources */,
+				BF00000000000000000022 /* SkillNode.swift in Sources */,
+				BF00000000000000000023 /* SkillTreeView.swift in Sources */,
+				BF00000000000000000024 /* Balance.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		BC00000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BC00000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_OPTIMIZATION_LEVEL = s;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		BC00000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				"INFOPLIST_KEY_UISupportedInterfaceOrientations~ipad" = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dungeondivers.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BC00000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				"INFOPLIST_KEY_UISupportedInterfaceOrientations~ipad" = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dungeondivers.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		CL00000000000000000001 /* Build configuration list for PBXProject "DungeonDivers" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC00000000000000000001 /* Debug */,
+				BC00000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CL00000000000000000002 /* Build configuration list for PBXNativeTarget "DungeonDivers" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC00000000000000000003 /* Debug */,
+				BC00000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = PJ00000000000000000000 /* Project object */;
+}
